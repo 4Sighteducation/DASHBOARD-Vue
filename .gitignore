@@ -1,0 +1,95 @@
+
+
+# Environment variables
+.env
+*.env
+.env.*
+
+# Logs
+*.log
+sync_logs/
+sync_report_*.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Checkpoints
+sync_checkpoint.pkl
+
+# Archives
+archive/
+
+# Temporary files
+temp_*.txt
+temp_*.json
+*.tmp
+
+# Database
+*.db
+*.sqlite3
+
+# Credentials (extra safety)
+*credentials*.json
+*secret*
+*private*
+knack_config.py
+AppLoaderv5.0.ts
+
+# AppLoader files with credentials
+AppLoaderasis3rdAug.md
+AppLoaderCopoy.js
+*AppLoader*Copy*
+*AppLoader*copoy*
+*AppLoader*backup*
+
+# Local environment files
+create_local_env.ps1
+local_env.py
+.env.local
+.env.development
+.env.production
+
+# Vue Dashboard
+vue-dashboard/node_modules/
+vue-dashboard/dist/
+vue-dashboard/.env*
+vue-dashboard/*.log
+
+# Build artifacts
+*.map
+build/
+
+# Test files with sensitive data
+test_supabase_auth.py
+test_supabase_connection.py
+check_supabase_key.py
+
+# Sync and deployment scripts
+deploy_*.sh
+deploy_*.ps1
+sync_*.bat
+
+# Heroku backend (already deployed separately)
+heroku_backend/
+
+# Personal/temporary files
+TODO.txt
+NOTES.md
+scratch*
+temp_*
+
+# IDE and editor files
+*.code-workspace
+.history/
+
+# OS-specific files
+Desktop.ini
+.Spotlight-V100
+.Trashes
