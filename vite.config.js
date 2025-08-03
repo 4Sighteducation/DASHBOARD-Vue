@@ -9,6 +9,10 @@ export default defineConfig({
       '@': resolve(__dirname, './src')
     }
   },
+  define: {
+    'process.env': {},
+    'process.env.NODE_ENV': JSON.stringify('production')
+  },
   build: {
     // Library mode for single-file output
     lib: {
@@ -21,12 +25,12 @@ export default defineConfig({
       external: [],
       output: {
         // JS output
-        entryFileNames: 'vuedash1a.js',
+        entryFileNames: 'vuedash1e.js',
         
         // CSS output - extracted to separate file
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {
-            return 'vuedash.css'
+            return 'vuedash1e.css'
           }
           return '[name][extname]'
         },

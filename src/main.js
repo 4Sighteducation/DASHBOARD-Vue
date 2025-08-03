@@ -26,8 +26,14 @@ window.initializeVueDashboard = function() {
     return
   }
   
-  // Clear container
+  // Clear container and any rich text elements
   container.innerHTML = ''
+  
+  // Also try to hide any rich text views that might be in the way
+  const richTextElements = container.querySelectorAll('.kn-rich-text, .kn-view-content')
+  richTextElements.forEach(el => el.style.display = 'none')
+  
+  console.log('Vue Dashboard: Container cleared and ready')
   
   // Create mount point
   const mountPoint = document.createElement('div')
