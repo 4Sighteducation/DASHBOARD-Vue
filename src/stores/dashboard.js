@@ -152,6 +152,7 @@ export const useDashboardStore = defineStore('dashboard', {
         const schools = await API.getSchools()
         console.log('Dashboard Store: Loaded schools from API:', schools.length, 'schools')
         console.log('Dashboard Store: First 5 schools:', schools.slice(0, 5).map(s => ({ id: s.id, name: s.name })))
+        console.log('Dashboard Store: Raw API response sample:', schools[0])
         this.establishments = schools.map(school => ({
           id: school.id,
           name: school.name,
@@ -234,6 +235,7 @@ export const useDashboardStore = defineStore('dashboard', {
     },
 
     async loadDashboardData() {
+      console.log('Dashboard Store: loadDashboardData called, selectedEstablishment:', this.selectedEstablishment)
       if (!this.selectedEstablishment) {
         throw new Error('No establishment selected')
       }
@@ -266,14 +268,18 @@ export const useDashboardStore = defineStore('dashboard', {
     },
 
     selectEstablishment(establishmentId) {
+      console.log('Dashboard Store: selectEstablishment called with:', establishmentId)
       this.selectedEstablishment = establishmentId
+      console.log('Dashboard Store: selectedEstablishment set to:', this.selectedEstablishment)
     },
 
     updateFilter(filterType, value) {
       if (this.filters.hasOwnProperty(filterType)) {
         this.filters[filterType] = value
-        // Reload data when filters change
-        this.loadDashboardData()
+        // Reload data when filters change, but only if an establishment is selected
+        if (this.selectedEstablishment) {
+          this.loadDashboardData()
+        }
       }
     },
 
@@ -285,7 +291,10 @@ export const useDashboardStore = defineStore('dashboard', {
         vespaArea: 'all',
         questionSubTheme: 'all'
       }
-      this.loadDashboardData()
+      // Only reload data if an establishment is selected
+      if (this.selectedEstablishment) {
+        this.loadDashboardData()
+      }
     }
   }
 })
