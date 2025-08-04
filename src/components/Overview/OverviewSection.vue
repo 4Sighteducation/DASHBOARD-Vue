@@ -130,9 +130,26 @@ const vespaElements = [
   { name: 'Overall', key: 'overall', color: '#FFD93D' }
 ]
 
-// Max Y value for histogram standardization
+// Max Y value for histogram standardization - find highest across all distributions
 const maxYValue = computed(() => {
-  return props.data?.statistics?.totalStudents || 100
+  if (!props.data?.statistics?.distributions) {
+    return 100
+  }
+  
+  let maxCount = 0
+  const distributions = props.data.statistics.distributions
+  
+  // Check all element distributions
+  for (const element of vespaElements) {
+    const dist = distributions[element.key]
+    if (dist && Array.isArray(dist)) {
+      const elementMax = Math.max(...dist)
+      maxCount = Math.max(maxCount, elementMax)
+    }
+  }
+  
+  // Round up to nearest 100
+  return Math.ceil(maxCount / 100) * 100
 })
 
 // Split elements for 2-row layout

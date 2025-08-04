@@ -38,16 +38,17 @@ function createChart() {
   
   const datasets = []
   
-  // School data
-  if (props.data.school) {
+  // School data - check if it's nested or direct
+  const schoolData = props.data.school || props.data
+  if (schoolData) {
     datasets.push({
       label: 'School Average',
       data: [
-        props.data.school.vision || 0,
-        props.data.school.effort || 0,
-        props.data.school.systems || 0,
-        props.data.school.practice || 0,
-        props.data.school.attitude || 0
+        schoolData.vision || 0,
+        schoolData.effort || 0,
+        schoolData.systems || 0,
+        schoolData.practice || 0,
+        schoolData.attitude || 0
       ],
       backgroundColor: 'rgba(59, 130, 246, 0.2)',
       borderColor: '#3b82f6',
@@ -57,28 +58,37 @@ function createChart() {
       pointHoverBackgroundColor: '#fff',
       pointHoverBorderColor: '#3b82f6'
     })
-  }
-  
-  // National data
-  if (props.data.national) {
-    datasets.push({
-      label: 'National Average',
-      data: [
-        props.data.national.vision || 0,
-        props.data.national.effort || 0,
-        props.data.national.systems || 0,
-        props.data.national.practice || 0,
-        props.data.national.attitude || 0
-      ],
-      backgroundColor: 'rgba(255, 217, 61, 0.1)',
-      borderColor: '#FFD93D',
-      borderWidth: 2,
-      pointBackgroundColor: '#FFD93D',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: '#FFD93D',
-      borderDash: [5, 5]
-    })
+    
+    // Add national data if available
+    const nationalData = props.data.national || {
+      vision: schoolData.nationalVision,
+      effort: schoolData.nationalEffort,
+      systems: schoolData.nationalSystems,
+      practice: schoolData.nationalPractice,
+      attitude: schoolData.nationalAttitude
+    }
+    
+    // Only add if we have national values
+    if (nationalData.vision || nationalData.effort || nationalData.systems || nationalData.practice || nationalData.attitude) {
+      datasets.push({
+        label: 'National Average',
+        data: [
+          nationalData.vision || 0,
+          nationalData.effort || 0,
+          nationalData.systems || 0,
+          nationalData.practice || 0,
+          nationalData.attitude || 0
+        ],
+        backgroundColor: 'rgba(255, 217, 61, 0.1)',
+        borderColor: '#FFD93D',
+        borderWidth: 2,
+        pointBackgroundColor: '#FFD93D',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: '#FFD93D',
+        borderDash: [5, 5]
+      })
+    }
   }
   
   chartInstance = new Chart(ctx, {

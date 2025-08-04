@@ -175,11 +175,12 @@ function createChart() {
       type: 'line',
       borderColor: '#FFD93D',
       backgroundColor: 'transparent',
-      borderWidth: 3,
-      pointRadius: 4,
+      borderWidth: 2,
+      pointRadius: 3,
       pointBackgroundColor: '#FFD93D',
-      tension: 0.2,
-      borderDash: [5, 5]
+      pointBorderColor: '#FFD93D',
+      tension: 0.4,
+      borderDash: [2, 2]
     })
   }
   
@@ -242,7 +243,7 @@ function createChart() {
           },
           ticks: {
             color: '#9CA3AF',
-            stepSize: Math.ceil((props.maxYValue || 100) / 10),
+            stepSize: props.maxYValue > 0 ? Math.max(10, Math.ceil(props.maxYValue / 10)) : 10,
             callback: function(value) {
               return Number.isInteger(value) ? value : ''
             }
@@ -268,26 +269,33 @@ function createChart() {
 
   // Add national average line if provided
   if (props.nationalAverage !== null && props.nationalAverage !== undefined) {
+    // Find max Y value for the line height
+    const maxY = Math.max(...props.distribution)
+    
+    if (!chartConfig.options.plugins) {
+      chartConfig.options.plugins = {}
+    }
+    
     chartConfig.options.plugins.annotation = {
       annotations: {
         nationalAvgLine: {
           type: 'line',
-          xMin: props.nationalAverage,
-          xMax: props.nationalAverage,
+          scaleID: 'x',
+          value: props.nationalAverage,
           borderColor: '#FFD93D',
           borderWidth: 3,
-          borderDash: [8, 4],
+          borderDash: [6, 3],
           label: {
-            enabled: true,
-            content: `National Avg: ${props.nationalAverage.toFixed(1)}`,
-            position: 'start',
+            display: true,
+            content: `National: ${props.nationalAverage.toFixed(1)}`,
+            position: 'end',
             backgroundColor: 'rgba(255, 217, 61, 0.9)',
             font: {
               weight: 'bold',
-              size: 12
+              size: 11
             },
             color: '#0F0F23',
-            padding: 4
+            yAdjust: -10
           }
         }
       }
