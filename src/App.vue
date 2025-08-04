@@ -147,7 +147,6 @@ function handleEstablishmentChange(establishmentId) {
 }
 
 function handleEstablishmentSelect(establishment) {
-  console.log('App.vue: handleEstablishmentSelect called with:', establishment)
   showSuperUserModal.value = false
   store.selectEstablishment(establishment.id)
   loadDashboardData()

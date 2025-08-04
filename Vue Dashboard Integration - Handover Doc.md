@@ -64,6 +64,55 @@ Needs frontend investigation
 User Authorization: Backend doesn't verify user permissions
 Plan: Pass user email as header, verify against staff_admins/super_users tables
 Dynamic Data: Trade-off accepted - data is 1 day old due to daily sync
+
+Recent Updates (January 2025)
+7. UUID Conversion Issues
+Problem: Frontend sends Knack IDs (strings) but database expects UUIDs
+Solution: Created convert_knack_id_to_uuid() helper function
+Applied to: /api/statistics, /api/qla, /api/statistics/<school_id>, /api/qla-data, /api/current-averages
+
+8. Frontend Data Format Mismatch
+Problem: Frontend expects different data structure than backend provides
+Frontend expects: {totalStudents, averageERI, vespaScores: {vision, effort, ...}, comparison: {school: [], national: []}}
+Backend was returning: Raw statistics grouped by element
+Solution: Transformed /api/statistics response to match frontend expectations
+
+9. No Actual Data Showing
+Problem: Backend returning placeholder/calculated data instead of real student data
+Root cause: Only querying school_statistics table, not actual vespa_scores or question_responses
+Attempted fix: Modified /api/statistics to query vespa_scores table directly
+Result: Failed with "No module named 'psycopg2'" error
+
+Current Status
+Working:
+✅ CORS headers properly configured
+✅ All required endpoints exist
+✅ UUID conversion handles Knack ID → Supabase UUID
+✅ Super Users can see and select establishments
+✅ No more 500 errors for filter endpoints
+
+Not Working:
+❌ No actual VESPA scores displayed (showing 6.0 for all, which is incorrect)
+❌ No Question Level Analysis data
+❌ No Comment Insights data
+❌ ERI calculation incorrect (should use outcome questions, not VESPA average)
+❌ Bar chart showing raw JSON instead of visualization
+❌ School switching error: "selectedEstablishment: undefined"
+❌ Latest attempt to query vespa_scores failed due to missing psycopg2 module
+
+Critical Issue
+The app.py attempted to use psycopg2 for raw SQL queries but the module isn't installed on Heroku.
+This needs to be fixed by either:
+1. Adding psycopg2 to requirements.txt, OR
+2. Using Supabase client methods instead of raw SQL
+
+Data Structure Issues
+The main problem is the backend isn't querying the actual data tables:
+- vespa_scores: Contains individual student VESPA scores (5-point scale)
+- question_responses: Contains individual question responses
+- school_statistics: Contains pre-aggregated statistics (appears to be 10-point scale)
+
+The frontend expects data from actual student records, not just aggregated statistics.
 Files Modified
 Frontend
 dashboard-frontend/src/AppLoaderCopoy.js - CDN URLs, cache buster

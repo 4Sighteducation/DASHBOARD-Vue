@@ -21,16 +21,27 @@
         />
       </div>
 
-      <!-- VESPA Scores -->
+      <!-- VESPA Score Histograms -->
+      <div class="histograms-section">
+        <h3 class="section-title">VESPA Score Distributions</h3>
+        <div class="histograms-grid">
+          <VespaHistogram
+            v-for="element in vespaElements"
+            :key="element.key"
+            :title="element.name"
+            :distribution="getDistribution(element.key)"
+            :national-average="getNationalAverage(element.key)"
+            :color="element.color"
+            :element-key="element.key"
+          />
+        </div>
+      </div>
+
+      <!-- VESPA Radar Chart -->
       <div class="charts-grid">
         <div class="chart-card">
-          <h3 class="chart-title">VESPA Scores Distribution</h3>
-          <VespaRadarChart :data="vespaScores" />
-        </div>
-        
-        <div class="chart-card">
-          <h3 class="chart-title">Score Comparison</h3>
-          <VespaBarChart :data="vespaComparison" />
+          <h3 class="chart-title">VESPA Scores Overview</h3>
+          <VespaRadarChart :data="vespaScoresForRadar" />
         </div>
       </div>
 
@@ -62,7 +73,7 @@
 import { computed } from 'vue'
 import StatCard from './StatCard.vue'
 import VespaRadarChart from './VespaRadarChart.vue'
-import VespaBarChart from './VespaBarChart.vue'
+import VespaHistogram from './VespaHistogram.vue'
 import ERIGauge from './ERIGauge.vue'
 import YearGroupChart from './YearGroupChart.vue'
 import InsightsGrid from './InsightsGrid.vue'
@@ -114,15 +125,49 @@ const statistics = computed(() => {
   ]
 })
 
-const vespaScores = computed(() => {
+// VESPA elements configuration
+const vespaElements = [
+  { name: 'Vision', key: 'vision', color: '#FF8F00' },
+  { name: 'Effort', key: 'effort', color: '#86B4F0' },
+  { name: 'Systems', key: 'systems', color: '#72CB44' },
+  { name: 'Practice', key: 'practice', color: '#7F31A4' },
+  { name: 'Attitude', key: 'attitude', color: '#F032E6' },
+  { name: 'Overall', key: 'overall', color: '#FFD93D' }
+]
+
+const vespaScoresForRadar = computed(() => {
   if (!props.data?.statistics?.vespaScores) return null
-  return props.data.statistics.vespaScores
+  // Convert scores to 0-100 scale for radar chart
+  const scores = props.data.statistics.vespaScores
+  return {
+    vision: (scores.vision || 0) * 20,
+    effort: (scores.effort || 0) * 20,
+    systems: (scores.systems || 0) * 20,
+    practice: (scores.practice || 0) * 20,
+    attitude: (scores.attitude || 0) * 20,
+    nationalVision: (scores.nationalVision || 0) * 20,
+    nationalEffort: (scores.nationalEffort || 0) * 20,
+    nationalSystems: (scores.nationalSystems || 0) * 20,
+    nationalPractice: (scores.nationalPractice || 0) * 20,
+    nationalAttitude: (scores.nationalAttitude || 0) * 20
+  }
 })
 
-const vespaComparison = computed(() => {
-  if (!props.data?.statistics?.comparison) return null
-  return props.data.statistics.comparison
-})
+// Get distribution for a specific element
+function getDistribution(elementKey) {
+  if (!props.data?.statistics?.distributions) {
+    // Return empty distribution if no data
+    return Array(11).fill(0)
+  }
+  return props.data.statistics.distributions[elementKey] || Array(11).fill(0)
+}
+
+// Get national average for a specific element
+function getNationalAverage(elementKey) {
+  if (!props.data?.statistics?.vespaScores) return null
+  const nationalKey = `national${elementKey.charAt(0).toUpperCase() + elementKey.slice(1)}`
+  return props.data.statistics.vespaScores[nationalKey] || null
+}
 
 const eriScore = computed(() => {
   return props.data?.statistics?.averageERI || 0
@@ -170,6 +215,24 @@ const responses = computed(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: var(--spacing-md);
+}
+
+.histograms-section {
+  margin-top: var(--spacing-xl);
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-primary);
+}
+
+.histograms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
 }
 
 .charts-grid {
