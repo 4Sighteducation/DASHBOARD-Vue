@@ -77,6 +77,15 @@ watch(() => props.value, () => {
   }
 })
 
+// Watch for national prop changes to redraw the chart with the national line
+watch(() => props.national, () => {
+  if (chartInstance && props.national) {
+    // Destroy and recreate the chart to show the national line
+    chartInstance.destroy()
+    createGauge()
+  }
+})
+
 function createGauge() {
   const ctx = chartCanvas.value?.getContext('2d')
   if (!ctx) return

@@ -25,12 +25,12 @@ export default defineConfig({
       external: [],
       output: {
         // JS output
-        entryFileNames: 'vuedash1v.js',
+        entryFileNames: 'vuedash1w.js',
         
         // CSS output - extracted to separate file
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {
-            return 'vuedash1v.css'
+            return 'vuedash1w.css'
           }
           return '[name][extname]'
         },

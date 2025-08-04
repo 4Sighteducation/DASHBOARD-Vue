@@ -460,3 +460,47 @@ Frontend:
 - DASHBOARD-Vue/src/stores/dashboard.js (added cycle filter)
 - DASHBOARD-Vue/vite.config.js (vuedash1s → vuedash1t)
 - dashboard-frontend/src/AppLoaderCopoy.js (CDN update)
+
+Recent Updates (January 2025 - Session 6 - ERI National Line Fix & Performance Issue)
+=====================================================================================
+
+23. ERI National Line Fix
+-------------------------
+Problem: ERI speedometer not showing national indicator line despite data being available
+Root Cause: No watch on `national` prop - chart created before national data arrives
+Solution: Added watch for national prop to recreate chart when national data changes
+```javascript
+// Watch for national prop changes to redraw the chart with the national line
+watch(() => props.national, () => {
+  if (chartInstance && props.national) {
+    chartInstance.destroy()
+    createGauge()
+  }
+})
+```
+
+24. Performance Issues Identified
+---------------------------------
+Problem: Dashboard loading slowly, especially for large schools (2000+ students)
+Possible Causes:
+- Backend processing large amounts of data in get_school_statistics_query()
+- Multiple Supabase queries even with batching
+- National distribution calculations for all elements
+Next Steps: Need to optimize query performance, consider server-side aggregation
+
+25. Filter Logic Overhaul Planned
+---------------------------------
+Current filters are hardcoded and not connected to real data.
+New filter requirements:
+- Year Group (dropdown) - from students.year_group
+- Group - from students.group  
+- Faculty - from students.faculty
+- Search for individual student - by name/email
+All filters should populate dynamically from Supabase data
+
+Files Modified in This Session
+------------------------------
+Frontend:
+- DASHBOARD-Vue/src/components/Overview/ERISpeedometer.vue (added national prop watch)
+- DASHBOARD-Vue/vite.config.js (vuedash1v → vuedash1w)
+- dashboard-frontend/src/AppLoaderCopoy.js (CDN update)
