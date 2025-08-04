@@ -110,14 +110,23 @@ const showERIModal = ref(false)
 // Computed properties
 const vespaScores = computed(() => {
   if (!props.data?.statistics?.vespaScores) return null
-  // Scale to 0-100 for radar chart
+  // Return scores as-is (0-10 scale)
   const scores = props.data.statistics.vespaScores
   return {
-    vision: scores.vision * 10,
-    effort: scores.effort * 10,
-    systems: scores.systems * 10,
-    practice: scores.practice * 10,
-    attitude: scores.attitude * 10
+    school: {
+      vision: scores.vision || 0,
+      effort: scores.effort || 0,
+      systems: scores.systems || 0,
+      practice: scores.practice || 0,
+      attitude: scores.attitude || 0
+    },
+    national: {
+      vision: scores.nationalVision || 0,
+      effort: scores.nationalEffort || 0,
+      systems: scores.nationalSystems || 0,
+      practice: scores.nationalPractice || 0,
+      attitude: scores.nationalAttitude || 0
+    }
   }
 })
 

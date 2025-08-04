@@ -24,12 +24,6 @@
         @establishment-change="handleEstablishmentChange"
       />
 
-      <!-- Filters Bar -->
-      <FilterBar 
-        :filters="filters"
-        @filter-change="handleFilterChange"
-      />
-
       <!-- Tab Navigation -->
       <div class="dashboard-tabs">
         <button 
@@ -42,6 +36,13 @@
         </button>
       </div>
 
+      <!-- Filters Bar -->
+      <FilterBar 
+        v-if="activeTab === 'overview'"
+        :filters="filters"
+        @filter-change="handleFilterChange"
+      />
+
       <!-- Tab Content -->
       <div class="tab-content">
         <transition name="fade" mode="out-in">
@@ -51,6 +52,7 @@
             :data="dashboardData"
             :filters="filters"
             :loading="sectionLoading"
+            @update-filter="handleFilterChange"
           />
         </transition>
       </div>

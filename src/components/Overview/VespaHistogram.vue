@@ -1,13 +1,13 @@
 <template>
   <div class="vespa-histogram">
     <!-- Scorecard -->
-    <div class="scorecard">
-      <div class="score-value">{{ averageScore }}</div>
+    <div class="scorecard" :style="scorecardStyle">
+      <div class="score-value" :style="{ color: color }">{{ averageScore }}</div>
       <div class="score-comparison" :class="comparisonClass">
         <svg class="arrow-icon" :class="arrowDirection" width="16" height="16" viewBox="0 0 16 16">
           <path d="M8 2L3 7h3v6h4V7h3L8 2z" fill="currentColor"/>
         </svg>
-        <span>{{ percentageDifference }}%</span>
+        <span>{{ parseFloat(percentageDifference) > 0 ? '+' : '' }}{{ percentageDifference }}%</span>
       </div>
     </div>
     
@@ -54,6 +54,10 @@ const props = defineProps({
   cycle: {
     type: Number,
     default: 1
+  },
+  maxYValue: {
+    type: Number,
+    default: null
   }
 })
 
@@ -81,10 +85,10 @@ const averageScore = computed(() => {
 
 // Calculate percentage difference from national
 const percentageDifference = computed(() => {
-  if (!props.nationalAverage) return '0.0'
+  if (!props.nationalAverage || props.nationalAverage === 0) return '0.0'
   const schoolAvg = parseFloat(averageScore.value)
   const diff = ((schoolAvg - props.nationalAverage) / props.nationalAverage) * 100
-  return Math.abs(diff).toFixed(1)
+  return diff.toFixed(1) // Keep sign for display
 })
 
 // Determine comparison class and arrow direction
@@ -98,6 +102,26 @@ const arrowDirection = computed(() => {
   if (!props.nationalAverage) return ''
   const schoolAvg = parseFloat(averageScore.value)
   return schoolAvg >= props.nationalAverage ? 'arrow-up' : 'arrow-down'
+})
+
+// Scorecard styling
+const scorecardStyle = computed(() => {
+  // Convert hex color to rgba
+  const hexToRgba = (hex, alpha) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    if (result) {
+      const r = parseInt(result[1], 16)
+      const g = parseInt(result[2], 16)
+      const b = parseInt(result[3], 16)
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`
+    }
+    return hex
+  }
+  
+  return {
+    borderColor: hexToRgba(props.color, 0.25),
+    backgroundColor: hexToRgba(props.color, 0.06)
+  }
 })
 
 onMounted(() => {
@@ -206,6 +230,7 @@ function createChart() {
       scales: {
         y: {
           beginAtZero: true,
+          max: props.maxYValue || undefined,
           grid: {
             color: 'rgba(255, 255, 255, 0.1)',
             borderColor: 'rgba(255, 255, 255, 0.2)'
@@ -217,7 +242,7 @@ function createChart() {
           },
           ticks: {
             color: '#9CA3AF',
-            stepSize: 1,
+            stepSize: Math.ceil((props.maxYValue || 100) / 10),
             callback: function(value) {
               return Number.isInteger(value) ? value : ''
             }
@@ -297,9 +322,10 @@ function updateChart() {
   justify-content: center;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-width: 2px;
+  border-style: solid;
+  transition: all 0.3s ease;
 }
 
 .score-value {

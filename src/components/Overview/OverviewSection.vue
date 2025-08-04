@@ -14,6 +14,8 @@
         :current-cycle="currentCycle"
         @cycle-change="handleCycleChange"
       />
+      
+
 
       <!-- VESPA Score Histograms -->
       <div class="histograms-section">
@@ -31,6 +33,7 @@
             :color="element.color"
             :element-key="element.key"
             :cycle="currentCycle"
+            :max-y-value="maxYValue"
           />
         </div>
         
@@ -46,6 +49,7 @@
             :color="element.color"
             :element-key="element.key"
             :cycle="currentCycle"
+            :max-y-value="maxYValue"
           />
         </div>
       </div>
@@ -72,7 +76,7 @@ const currentCycle = ref(1)
 // Event handlers
 const handleCycleChange = (newCycle) => {
   currentCycle.value = newCycle
-  emit('update-filter', { cycle: newCycle })
+  emit('update-filter', 'cycle', newCycle)
 }
 
 // Computed properties for formatted data
@@ -125,6 +129,11 @@ const vespaElements = [
   { name: 'Attitude', key: 'attitude', color: '#F032E6' },
   { name: 'Overall', key: 'overall', color: '#FFD93D' }
 ]
+
+// Max Y value for histogram standardization
+const maxYValue = computed(() => {
+  return props.data?.statistics?.totalStudents || 100
+})
 
 // Split elements for 2-row layout
 const topRowElements = vespaElements.slice(0, 3) // Vision, Effort, Systems

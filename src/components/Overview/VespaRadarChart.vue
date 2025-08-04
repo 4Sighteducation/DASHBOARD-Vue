@@ -36,43 +36,56 @@ function createChart() {
   
   const ctx = chartCanvas.value.getContext('2d')
   
+  const datasets = []
+  
+  // School data
+  if (props.data.school) {
+    datasets.push({
+      label: 'School Average',
+      data: [
+        props.data.school.vision || 0,
+        props.data.school.effort || 0,
+        props.data.school.systems || 0,
+        props.data.school.practice || 0,
+        props.data.school.attitude || 0
+      ],
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      borderColor: '#3b82f6',
+      borderWidth: 2,
+      pointBackgroundColor: '#3b82f6',
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: '#3b82f6'
+    })
+  }
+  
+  // National data
+  if (props.data.national) {
+    datasets.push({
+      label: 'National Average',
+      data: [
+        props.data.national.vision || 0,
+        props.data.national.effort || 0,
+        props.data.national.systems || 0,
+        props.data.national.practice || 0,
+        props.data.national.attitude || 0
+      ],
+      backgroundColor: 'rgba(255, 217, 61, 0.1)',
+      borderColor: '#FFD93D',
+      borderWidth: 2,
+      pointBackgroundColor: '#FFD93D',
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: '#FFD93D',
+      borderDash: [5, 5]
+    })
+  }
+  
   chartInstance = new Chart(ctx, {
     type: 'radar',
     data: {
       labels: ['Vision', 'Effort', 'Systems', 'Practice', 'Attitude'],
-      datasets: [{
-        label: 'School Average',
-        data: [
-          props.data.vision || 0,
-          props.data.effort || 0,
-          props.data.systems || 0,
-          props.data.practice || 0,
-          props.data.attitude || 0
-        ],
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        borderColor: '#3b82f6',
-        borderWidth: 2,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#3b82f6'
-      }, {
-        label: 'National Average',
-        data: [
-          props.data.nationalVision || 0,
-          props.data.nationalEffort || 0,
-          props.data.nationalSystems || 0,
-          props.data.nationalPractice || 0,
-          props.data.nationalAttitude || 0
-        ],
-        backgroundColor: 'rgba(107, 114, 128, 0.1)',
-        borderColor: '#6b7280',
-        borderWidth: 2,
-        pointBackgroundColor: '#6b7280',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#6b7280'
-      }]
+      datasets: datasets
     },
     options: {
       responsive: true,
@@ -89,10 +102,11 @@ function createChart() {
       scales: {
         r: {
           beginAtZero: true,
-          max: 100,
+          max: 10,
           ticks: {
             color: '#64748b',
-            backdropColor: 'transparent'
+            backdropColor: 'transparent',
+            stepSize: 2
           },
           grid: {
             color: 'rgba(255, 255, 255, 0.1)'
