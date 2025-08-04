@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-container">
+  <div class="chart-container" :style="{ width: size + 'px', height: size + 'px' }">
     <canvas ref="chartCanvas"></canvas>
   </div>
 </template>
@@ -9,7 +9,11 @@ import { ref, onMounted, watch } from 'vue'
 import Chart from 'chart.js/auto'
 
 const props = defineProps({
-  data: Object
+  data: Object,
+  size: {
+    type: Number,
+    default: 300
+  }
 })
 
 const chartCanvas = ref(null)

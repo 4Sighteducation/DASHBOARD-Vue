@@ -1,11 +1,25 @@
 <template>
   <div class="vespa-histogram">
-    <canvas :id="canvasId" ref="chartCanvas"></canvas>
+    <!-- Scorecard -->
+    <div class="scorecard">
+      <div class="score-value">{{ averageScore }}</div>
+      <div class="score-comparison" :class="comparisonClass">
+        <svg class="arrow-icon" :class="arrowDirection" width="16" height="16" viewBox="0 0 16 16">
+          <path d="M8 2L3 7h3v6h4V7h3L8 2z" fill="currentColor"/>
+        </svg>
+        <span>{{ percentageDifference }}%</span>
+      </div>
+    </div>
+    
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas :id="canvasId" ref="chartCanvas"></canvas>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Chart, registerables } from 'chart.js'
 
 // Register Chart.js components
@@ -25,6 +39,10 @@ const props = defineProps({
     type: Number,
     default: null
   },
+  nationalDistribution: {
+    type: Array,
+    default: () => []
+  },
   color: {
     type: String,
     default: '#60A5FA' // Default blue
@@ -32,6 +50,10 @@ const props = defineProps({
   elementKey: {
     type: String,
     required: true
+  },
+  cycle: {
+    type: Number,
+    default: 1
   }
 })
 
@@ -40,7 +62,43 @@ let chartInstance = null
 const canvasId = `histogram-${props.elementKey}`
 
 // Calculate total responses for display
-const totalResponses = props.distribution.reduce((sum, count) => sum + count, 0)
+const totalResponses = computed(() => {
+  return props.distribution.reduce((sum, count) => sum + count, 0)
+})
+
+// Calculate average score
+const averageScore = computed(() => {
+  let weightedSum = 0
+  let totalCount = 0
+  
+  props.distribution.forEach((count, score) => {
+    weightedSum += score * count
+    totalCount += count
+  })
+  
+  return totalCount > 0 ? (weightedSum / totalCount).toFixed(1) : '0.0'
+})
+
+// Calculate percentage difference from national
+const percentageDifference = computed(() => {
+  if (!props.nationalAverage) return '0.0'
+  const schoolAvg = parseFloat(averageScore.value)
+  const diff = ((schoolAvg - props.nationalAverage) / props.nationalAverage) * 100
+  return Math.abs(diff).toFixed(1)
+})
+
+// Determine comparison class and arrow direction
+const comparisonClass = computed(() => {
+  if (!props.nationalAverage) return ''
+  const schoolAvg = parseFloat(averageScore.value)
+  return schoolAvg >= props.nationalAverage ? 'positive' : 'negative'
+})
+
+const arrowDirection = computed(() => {
+  if (!props.nationalAverage) return ''
+  const schoolAvg = parseFloat(averageScore.value)
+  return schoolAvg >= props.nationalAverage ? 'arrow-up' : 'arrow-down'
+})
 
 onMounted(() => {
   createChart()
@@ -65,17 +123,47 @@ function createChart() {
 
   const labels = Array.from({ length: 11 }, (_, i) => i.toString())
   
+  const datasets = [{
+    label: 'School',
+    data: props.distribution,
+    backgroundColor: props.color + '80', // Add transparency
+    borderColor: props.color,
+    borderWidth: 2,
+    barPercentage: 0.8
+  }]
+  
+  // Add national distribution line if available
+  if (props.nationalDistribution && props.nationalDistribution.length === 11) {
+    // Calculate percentages for national data
+    const nationalTotal = props.nationalDistribution.reduce((sum, count) => sum + count, 0)
+    const nationalPercentages = props.nationalDistribution.map(count => 
+      nationalTotal > 0 ? (count / nationalTotal * 100) : 0
+    )
+    
+    // Scale to match school data display
+    const maxSchoolCount = Math.max(...props.distribution)
+    const scaleFactor = maxSchoolCount / 100
+    const scaledNationalData = nationalPercentages.map(pct => pct * scaleFactor)
+    
+    datasets.push({
+      label: 'National',
+      data: scaledNationalData,
+      type: 'line',
+      borderColor: '#FFD93D',
+      backgroundColor: 'transparent',
+      borderWidth: 3,
+      pointRadius: 4,
+      pointBackgroundColor: '#FFD93D',
+      tension: 0.2,
+      borderDash: [5, 5]
+    })
+  }
+  
   const chartConfig = {
     type: 'bar',
     data: {
       labels: labels,
-      datasets: [{
-        label: 'Students',
-        data: props.distribution,
-        backgroundColor: props.color + '80', // Add transparency
-        borderColor: props.color,
-        borderWidth: 2
-      }]
+      datasets: datasets
     },
     options: {
       responsive: true,
@@ -84,7 +172,7 @@ function createChart() {
       plugins: {
         title: {
           display: true,
-          text: `${props.title} (n=${totalResponses})`,
+          text: `${props.title} Score Distribution - Cycle ${props.cycle || 1}`,
           color: '#E5E7EB',
           font: {
             size: 14,
@@ -92,7 +180,12 @@ function createChart() {
           }
         },
         legend: {
-          display: false
+          display: props.nationalDistribution && props.nationalDistribution.length === 11,
+          position: 'top',
+          labels: {
+            color: '#9CA3AF',
+            usePointStyle: true
+          }
         },
         tooltip: {
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
@@ -103,7 +196,8 @@ function createChart() {
           callbacks: {
             label: function(context) {
               const value = context.raw
-              const percentage = totalResponses > 0 ? ((value / totalResponses) * 100).toFixed(1) : 0
+              const total = totalResponses.value
+              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
               return `${value} students (${percentage}%)`
             }
           }
@@ -182,7 +276,7 @@ function updateChart() {
   if (!chartInstance) return
   
   chartInstance.data.datasets[0].data = props.distribution
-  chartInstance.options.plugins.title.text = `${props.title} (n=${totalResponses})`
+  chartInstance.options.plugins.title.text = `${props.title} Score Distribution - Cycle ${props.cycle || 1}`
   chartInstance.update()
 }
 </script>
@@ -191,6 +285,60 @@ function updateChart() {
 .vespa-histogram {
   width: 100%;
   height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.score-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--text-primary, #ffffff);
+}
+
+.score-comparison {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.score-comparison.positive {
+  color: #10B981;
+}
+
+.score-comparison.negative {
+  color: #EF4444;
+}
+
+.arrow-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.arrow-icon.arrow-up {
+  transform: rotate(0deg);
+}
+
+.arrow-icon.arrow-down {
+  transform: rotate(180deg);
+}
+
+.chart-container {
+  flex: 1;
   position: relative;
 }
 

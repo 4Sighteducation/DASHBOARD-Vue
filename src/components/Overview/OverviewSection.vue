@@ -8,81 +8,72 @@
 
     <!-- Content -->
     <div v-else class="overview-content">
-      <!-- Statistics Cards -->
-      <div class="statistics-grid">
-        <StatCard 
-          v-for="stat in statistics" 
-          :key="stat.id"
-          :title="stat.title"
-          :value="stat.value"
-          :change="stat.change"
-          :icon="stat.icon"
-          :color="stat.color"
-        />
-      </div>
+      <!-- Summary Header -->
+      <SummaryHeader 
+        :data="props.data"
+        :current-cycle="currentCycle"
+        @cycle-change="handleCycleChange"
+      />
 
       <!-- VESPA Score Histograms -->
       <div class="histograms-section">
         <h3 class="section-title">VESPA Score Distributions</h3>
-        <div class="histograms-grid">
+        
+        <!-- Top row: Vision, Effort, Systems -->
+        <div class="histograms-row">
           <VespaHistogram
-            v-for="element in vespaElements"
+            v-for="element in topRowElements"
             :key="element.key"
             :title="element.name"
             :distribution="getDistribution(element.key)"
             :national-average="getNationalAverage(element.key)"
+            :national-distribution="getNationalDistribution(element.key)"
             :color="element.color"
             :element-key="element.key"
+            :cycle="currentCycle"
+          />
+        </div>
+        
+        <!-- Bottom row: Practice, Attitude, Overall -->
+        <div class="histograms-row">
+          <VespaHistogram
+            v-for="element in bottomRowElements"
+            :key="element.key"
+            :title="element.name"
+            :distribution="getDistribution(element.key)"
+            :national-average="getNationalAverage(element.key)"
+            :national-distribution="getNationalDistribution(element.key)"
+            :color="element.color"
+            :element-key="element.key"
+            :cycle="currentCycle"
           />
         </div>
       </div>
-
-      <!-- VESPA Radar Chart -->
-      <div class="charts-grid">
-        <div class="chart-card">
-          <h3 class="chart-title">VESPA Scores Overview</h3>
-          <VespaRadarChart :data="vespaScoresForRadar" />
-        </div>
-      </div>
-
-      <!-- ERI Gauge -->
-      <div class="eri-section">
-        <ERIGauge 
-          :value="eriScore" 
-          :nationalAverage="nationalERI"
-          :trend="eriTrend"
-        />
-      </div>
-
-      <!-- Year Group Performance -->
-      <div class="chart-card full-width">
-        <h3 class="chart-title">Performance by Year Group</h3>
-        <YearGroupChart :data="yearGroupData" />
-      </div>
-      
-      <!-- Automated Insights -->
-      <InsightsGrid
-        :responses="responses"
-        :loading="loading"
-      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import StatCard from './StatCard.vue'
-import VespaRadarChart from './VespaRadarChart.vue'
+import { computed, ref } from 'vue'
+import SummaryHeader from './SummaryHeader.vue'
 import VespaHistogram from './VespaHistogram.vue'
-import ERIGauge from './ERIGauge.vue'
-import YearGroupChart from './YearGroupChart.vue'
-import InsightsGrid from './InsightsGrid.vue'
 
 const props = defineProps({
   data: Object,
   filters: Object,
   loading: Boolean
 })
+
+const emit = defineEmits(['update-filter'])
+
+// State
+const currentCycle = ref(1)
+
+// Event handlers
+const handleCycleChange = (newCycle) => {
+  currentCycle.value = newCycle
+  emit('update-filter', { cycle: newCycle })
+}
 
 // Computed properties for formatted data
 const statistics = computed(() => {
@@ -135,6 +126,10 @@ const vespaElements = [
   { name: 'Overall', key: 'overall', color: '#FFD93D' }
 ]
 
+// Split elements for 2-row layout
+const topRowElements = vespaElements.slice(0, 3) // Vision, Effort, Systems
+const bottomRowElements = vespaElements.slice(3, 6) // Practice, Attitude, Overall
+
 const vespaScoresForRadar = computed(() => {
   if (!props.data?.statistics?.vespaScores) return null
   // Convert scores to 0-100 scale for radar chart
@@ -153,21 +148,7 @@ const vespaScoresForRadar = computed(() => {
   }
 })
 
-// Get distribution for a specific element
-function getDistribution(elementKey) {
-  if (!props.data?.statistics?.distributions) {
-    // Return empty distribution if no data
-    return Array(11).fill(0)
-  }
-  return props.data.statistics.distributions[elementKey] || Array(11).fill(0)
-}
-
-// Get national average for a specific element
-function getNationalAverage(elementKey) {
-  if (!props.data?.statistics?.vespaScores) return null
-  const nationalKey = `national${elementKey.charAt(0).toUpperCase() + elementKey.slice(1)}`
-  return props.data.statistics.vespaScores[nationalKey] || null
-}
+// These functions are defined later in the file
 
 const eriScore = computed(() => {
   return props.data?.statistics?.averageERI || 0
@@ -190,6 +171,44 @@ const responses = computed(() => {
   // Get responses data from the dashboard data
   return props.data?.responses || []
 })
+
+// Methods for getting distribution data
+const getDistribution = (elementKey) => {
+  if (!props.data?.statistics?.distributions) {
+    // Return empty distribution
+    return Array(11).fill(0)
+  }
+  
+  const distributions = props.data.statistics.distributions
+  const elementData = distributions[elementKey]
+  
+  if (!elementData || !Array.isArray(elementData)) {
+    return Array(11).fill(0)
+  }
+  
+  return elementData
+}
+
+const getNationalAverage = (elementKey) => {
+  if (!props.data?.statistics?.comparison?.national) return null
+  
+  const nationalData = props.data.statistics.comparison.national
+  const elementIndex = vespaElements.findIndex(e => e.key === elementKey)
+  
+  return nationalData[elementIndex] || null
+}
+
+const getNationalDistribution = (elementKey) => {
+  if (!props.data?.statistics?.nationalDistributions) return []
+  
+  const nationalDist = props.data.statistics.nationalDistributions[elementKey]
+  
+  if (!nationalDist || !Array.isArray(nationalDist)) {
+    return []
+  }
+  
+  return nationalDist
+}
 </script>
 
 <style scoped>
@@ -222,17 +241,30 @@ const responses = computed(() => {
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: var(--spacing-lg);
   color: var(--text-primary);
+  text-align: center;
 }
 
-.histograms-grid {
+.histograms-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 1024px) {
+  .histograms-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .histograms-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .charts-grid {
