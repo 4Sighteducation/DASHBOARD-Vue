@@ -145,20 +145,32 @@ function createGauge() {
           const radius = chart.innerRadius + (chart.outerRadius - chart.innerRadius) / 2
           
           // Calculate angle for national average
-          const angle = valueToAngle(props.national) * (Math.PI / 180)
-          const x = centerX + Math.cos(angle) * radius
-          const y = centerY + Math.sin(angle) * radius
+          // Chart starts at 270 degrees (9 o'clock) and goes 180 degrees clockwise
+          const normalizedValue = (props.national - 1) / 4 // 0-1 for 1-5 scale
+          const angleInDegrees = 270 + (normalizedValue * 180) // 270 to 450 (90) degrees
+          const angleInRadians = angleInDegrees * (Math.PI / 180)
           
           // Draw line
           ctx.save()
           ctx.strokeStyle = '#FFD93D'
-          ctx.lineWidth = 3
+          ctx.lineWidth = 4
+          ctx.setLineDash([5, 3])
           ctx.beginPath()
-          ctx.moveTo(centerX + Math.cos(angle) * (chart.innerRadius - 10), 
-                     centerY + Math.sin(angle) * (chart.innerRadius - 10))
-          ctx.lineTo(centerX + Math.cos(angle) * (chart.outerRadius + 10), 
-                     centerY + Math.sin(angle) * (chart.outerRadius + 10))
+          ctx.moveTo(centerX + Math.cos(angleInRadians) * (chart.innerRadius - 5), 
+                     centerY + Math.sin(angleInRadians) * (chart.innerRadius - 5))
+          ctx.lineTo(centerX + Math.cos(angleInRadians) * (chart.outerRadius + 5), 
+                     centerY + Math.sin(angleInRadians) * (chart.outerRadius + 5))
           ctx.stroke()
+          
+          // Add a label for the national value
+          ctx.fillStyle = '#FFD93D'
+          ctx.font = 'bold 10px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          const labelX = centerX + Math.cos(angleInRadians) * (chart.outerRadius + 15)
+          const labelY = centerY + Math.sin(angleInRadians) * (chart.outerRadius + 15)
+          ctx.fillText(props.national.toFixed(1), labelX, labelY)
+          
           ctx.restore()
         }
       }
