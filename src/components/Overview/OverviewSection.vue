@@ -216,23 +216,33 @@ const getDistribution = (elementKey) => {
 }
 
 const getNationalAverage = (elementKey) => {
-  if (!props.data?.statistics?.comparison?.national) return null
+  if (!props.data?.statistics?.comparison?.national) {
+    console.log(`[getNationalAverage] No national comparison data for ${elementKey}`)
+    return null
+  }
   
   const nationalData = props.data.statistics.comparison.national
   const elementIndex = vespaElements.findIndex(e => e.key === elementKey)
+  const nationalAvg = nationalData[elementIndex] || null
   
-  return nationalData[elementIndex] || null
+  console.log(`[getNationalAverage] ${elementKey}: index=${elementIndex}, value=${nationalAvg}, nationalData=`, nationalData)
+  return nationalAvg
 }
 
 const getNationalDistribution = (elementKey) => {
-  if (!props.data?.statistics?.nationalDistributions) return []
+  if (!props.data?.statistics?.nationalDistributions) {
+    console.log(`[getNationalDistribution] No nationalDistributions data for ${elementKey}`)
+    return []
+  }
   
   const nationalDist = props.data.statistics.nationalDistributions[elementKey]
   
   if (!nationalDist || !Array.isArray(nationalDist)) {
+    console.log(`[getNationalDistribution] Invalid distribution for ${elementKey}:`, nationalDist)
     return []
   }
   
+  console.log(`[getNationalDistribution] ${elementKey}:`, nationalDist)
   return nationalDist
 }
 </script>

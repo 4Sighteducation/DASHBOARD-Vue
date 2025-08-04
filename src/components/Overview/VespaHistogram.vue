@@ -21,9 +21,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Chart, registerables } from 'chart.js'
+import annotationPlugin from 'chartjs-plugin-annotation'
 
-// Register Chart.js components
-Chart.register(...registerables)
+// Register Chart.js components including annotation plugin
+Chart.register(...registerables, annotationPlugin)
 
 const props = defineProps({
   title: {
@@ -125,6 +126,11 @@ const scorecardStyle = computed(() => {
 })
 
 onMounted(() => {
+  console.log(`[VespaHistogram] ${props.title} mounted with:`, {
+    nationalAverage: props.nationalAverage,
+    nationalDistribution: props.nationalDistribution,
+    distribution: props.distribution
+  })
   createChart()
 })
 
@@ -158,6 +164,7 @@ function createChart() {
   
   // Add national distribution line if available
   if (props.nationalDistribution && props.nationalDistribution.length === 11) {
+    console.log(`[VespaHistogram] Adding national distribution for ${props.title}:`, props.nationalDistribution)
     // Calculate percentages for national data
     const nationalTotal = props.nationalDistribution.reduce((sum, count) => sum + count, 0)
     const nationalPercentages = props.nationalDistribution.map(count => 
@@ -168,6 +175,7 @@ function createChart() {
     const maxSchoolCount = Math.max(...props.distribution)
     const scaleFactor = maxSchoolCount / 100
     const scaledNationalData = nationalPercentages.map(pct => pct * scaleFactor)
+    console.log(`[VespaHistogram] Scaled national data for ${props.title}:`, scaledNationalData)
     
     datasets.push({
       label: 'National',
@@ -181,6 +189,11 @@ function createChart() {
       pointBorderColor: '#FFD93D',
       tension: 0.4,
       borderDash: [2, 2]
+    })
+  } else {
+    console.log(`[VespaHistogram] No valid national distribution for ${props.title}:`, {
+      hasData: !!props.nationalDistribution,
+      length: props.nationalDistribution?.length
     })
   }
   
@@ -269,6 +282,7 @@ function createChart() {
 
   // Add national average line if provided
   if (props.nationalAverage !== null && props.nationalAverage !== undefined) {
+    console.log(`[VespaHistogram] Adding national average line for ${props.title}: ${props.nationalAverage}`)
     // Find max Y value for the line height
     const maxY = Math.max(...props.distribution)
     
@@ -300,6 +314,8 @@ function createChart() {
         }
       }
     }
+  } else {
+    console.log(`[VespaHistogram] No national average for ${props.title}:`, props.nationalAverage)
   }
 
   chartInstance = new Chart(ctx, chartConfig)
