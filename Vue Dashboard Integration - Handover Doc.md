@@ -498,9 +498,52 @@ New filter requirements:
 - Search for individual student - by name/email
 All filters should populate dynamically from Supabase data
 
+26. Filter System Overhaul
+--------------------------
+Implemented new filter system replacing hardcoded filters with dynamic data from Supabase:
+
+Backend Changes:
+- Added /api/groups endpoint - returns distinct groups for an establishment
+- Added /api/faculties endpoint - returns distinct faculties for an establishment  
+- Added /api/students/search endpoint - searches students by name/email with autocomplete
+
+Frontend Changes:
+- Completely rewrote FilterBar.vue component:
+  - Year Group dropdown (existing endpoint, now establishment-specific)
+  - Group dropdown (new, populated from students.group)
+  - Faculty dropdown (new, populated from students.faculty)
+  - Student search with autocomplete (new, searches by name/email)
+- Updated dashboard store:
+  - Removed old filters (academicYear, keyStage, vespaArea, questionSubTheme)
+  - Added new filters (yearGroup, group, faculty, studentId)
+  - Removed loadFilterOptions method (filters now loaded in FilterBar)
+- Added debounce utility for search optimization
+- Updated API service with new endpoints
+
+Filter Data Flow:
+- Filters populate when establishment is selected
+- All dropdowns show establishment-specific data
+- Student search provides autocomplete with debounced API calls
+- Clear Filters button resets all selections but preserves cycle
+
 Files Modified in This Session
 ------------------------------
+Backend:
+- app.py (added /api/groups, /api/faculties, /api/students/search endpoints)
+
 Frontend:
 - DASHBOARD-Vue/src/components/Overview/ERISpeedometer.vue (added national prop watch)
+- DASHBOARD-Vue/src/components/FilterBar.vue (complete rewrite with new filters)
+- DASHBOARD-Vue/src/stores/dashboard.js (updated filter state, removed old methods)
+- DASHBOARD-Vue/src/services/api.js (added new filter endpoints)
+- DASHBOARD-Vue/src/utils/debounce.js (new utility for search)
 - DASHBOARD-Vue/vite.config.js (vuedash1v → vuedash1w)
 - dashboard-frontend/src/AppLoaderCopoy.js (CDN update)
+
+Status: Filter system overhaul is COMPLETE and ready for deployment
+
+Next Steps for Filters:
+1. Deploy backend changes (new endpoints)
+2. Build and deploy frontend (npm run build)
+3. Test all filters with real data
+4. Apply same filter logic to QLA and Comment Insights endpoints

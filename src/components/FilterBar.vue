@@ -2,34 +2,6 @@
   <div class="filter-bar">
     <div class="filter-container">
       <div class="filter-group">
-        <label class="filter-label">Academic Year</label>
-        <select 
-          class="form-select" 
-          :value="filters.academicYear"
-          @change="updateFilter('academicYear', $event.target.value)"
-        >
-          <option value="all">All Years</option>
-          <option v-for="year in academicYears" :key="year" :value="year">
-            {{ year }}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label class="filter-label">Key Stage</label>
-        <select 
-          class="form-select"
-          :value="filters.keyStage"
-          @change="updateFilter('keyStage', $event.target.value)"
-        >
-          <option value="all">All Key Stages</option>
-          <option v-for="ks in keyStages" :key="ks" :value="ks">
-            {{ ks }}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
         <label class="filter-label">Year Group</label>
         <select 
           class="form-select"
@@ -44,19 +16,68 @@
       </div>
 
       <div class="filter-group">
-        <label class="filter-label">VESPA Area</label>
+        <label class="filter-label">Group</label>
         <select 
           class="form-select"
-          :value="filters.vespaArea"
-          @change="updateFilter('vespaArea', $event.target.value)"
+          :value="filters.group"
+          @change="updateFilter('group', $event.target.value)"
+          :disabled="!groups.length"
         >
-          <option value="all">All Areas</option>
-          <option value="vision">Vision</option>
-          <option value="effort">Effort</option>
-          <option value="systems">Systems</option>
-          <option value="practice">Practice</option>
-          <option value="attitude">Attitude</option>
+          <option value="all">All Groups</option>
+          <option v-for="group in groups" :key="group" :value="group">
+            {{ group }}
+          </option>
         </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Faculty</label>
+        <select 
+          class="form-select"
+          :value="filters.faculty"
+          @change="updateFilter('faculty', $event.target.value)"
+          :disabled="!faculties.length"
+        >
+          <option value="all">All Faculties</option>
+          <option v-for="faculty in faculties" :key="faculty" :value="faculty">
+            {{ faculty }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group search-group">
+        <label class="filter-label">Search Student</label>
+        <div class="search-wrapper">
+          <input 
+            type="text"
+            class="form-input"
+            v-model="searchQuery"
+            @input="handleSearchInput"
+            @focus="showSearchResults = true"
+            @blur="handleSearchBlur"
+            placeholder="Type student name or email..."
+          />
+          <div v-if="showSearchResults && (searchResults.length || searchQuery)" class="search-results">
+            <div v-if="searchLoading" class="search-loading">Searching...</div>
+            <div v-else-if="searchResults.length === 0 && searchQuery" class="search-empty">
+              No students found
+            </div>
+            <div v-else>
+              <div 
+                v-for="student in searchResults" 
+                :key="student.id"
+                class="search-result-item"
+                @mousedown="selectStudent(student)"
+              >
+                <div class="student-name">{{ student.name }}</div>
+                <div class="student-info">
+                  <span v-if="student.yearGroup">Year {{ student.yearGroup }}</span>
+                  <span v-if="student.group"> • {{ student.group }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <button 
@@ -71,8 +92,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useDashboardStore } from '../stores/dashboard'
+import { API } from '../services/api'
+import { debounce } from '../utils/debounce'
 
 const props = defineProps({
   filters: {
@@ -85,36 +108,101 @@ const emit = defineEmits(['filter-change'])
 
 const store = useDashboardStore()
 
-// Get filter options from store
-const academicYears = computed(() => 
-  store.filterOptions.academicYears
-    .filter(opt => opt.value !== 'all')
-    .map(opt => opt.value)
-)
+// Local state
+const yearGroups = ref([])
+const groups = ref([])
+const faculties = ref([])
+const searchQuery = ref('')
+const searchResults = ref([])
+const searchLoading = ref(false)
+const showSearchResults = ref(false)
 
-const keyStages = computed(() => 
-  store.filterOptions.keyStages
-    .filter(opt => opt.value !== 'all')
-    .map(opt => opt.value)
-)
-
-const yearGroups = computed(() => 
-  store.filterOptions.yearGroups
-    .filter(opt => opt.value !== 'all')
-    .map(opt => opt.value)
-)
-
+// Computed
 const hasActiveFilters = computed(() => {
-  return Object.values(props.filters).some(value => value !== 'all')
+  return props.filters.yearGroup !== 'all' || 
+         props.filters.group !== 'all' ||
+         props.filters.faculty !== 'all' ||
+         props.filters.studentId !== null
 })
+
+// Load filter options when establishment changes
+watch(() => store.selectedEstablishment, async (newVal) => {
+  if (newVal) {
+    await loadFilterOptions()
+  }
+})
+
+// Debounced search function
+const performSearch = debounce(async (query) => {
+  if (!query || query.length < 2) {
+    searchResults.value = []
+    return
+  }
+
+  searchLoading.value = true
+  try {
+    const results = await API.searchStudents(store.selectedEstablishment, query)
+    searchResults.value = results
+  } catch (error) {
+    console.error('Failed to search students:', error)
+    searchResults.value = []
+  } finally {
+    searchLoading.value = false
+  }
+}, 300)
+
+// Methods
+async function loadFilterOptions() {
+  try {
+    const [yearGroupsData, groupsData, facultiesData] = await Promise.all([
+      API.getYearGroups(store.selectedEstablishment),
+      API.getGroups(store.selectedEstablishment),
+      API.getFaculties(store.selectedEstablishment)
+    ])
+
+    yearGroups.value = yearGroupsData
+    groups.value = groupsData
+    faculties.value = facultiesData
+  } catch (error) {
+    console.error('Failed to load filter options:', error)
+  }
+}
 
 function updateFilter(filterType, value) {
   emit('filter-change', filterType, value)
 }
 
+function handleSearchInput(event) {
+  const query = event.target.value
+  performSearch(query)
+}
+
+function handleSearchBlur() {
+  // Delay hiding results to allow click on result
+  setTimeout(() => {
+    showSearchResults.value = false
+  }, 200)
+}
+
+function selectStudent(student) {
+  searchQuery.value = student.name
+  searchResults.value = []
+  showSearchResults.value = false
+  emit('filter-change', 'studentId', student.id)
+}
+
 function clearFilters() {
+  searchQuery.value = ''
+  searchResults.value = []
   store.resetFilters()
 }
+
+// Load initial data
+onMounted(() => {
+  if (store.selectedEstablishment) {
+    loadFilterOptions()
+  }
+})
 </script>
 
 <style scoped>
@@ -138,6 +226,10 @@ function clearFilters() {
   min-width: 200px;
 }
 
+.search-group {
+  min-width: 300px;
+}
+
 .filter-label {
   display: block;
   margin-bottom: var(--spacing-xs);
@@ -146,26 +238,91 @@ function clearFilters() {
   color: var(--text-secondary);
 }
 
-.form-select {
+.form-select,
+.form-input {
   width: 100%;
-  padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   background-color: var(--secondary-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 0.875rem;
-  cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.form-select:hover {
+.form-select {
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.form-select:hover,
+.form-input:hover {
   border-color: var(--accent-primary);
 }
 
-.form-select:focus {
+.form-select:focus,
+.form-input:focus {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.search-loading,
+.search-empty {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.search-result-item {
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: var(--secondary-bg);
+}
+
+.student-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.student-info {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
 }
 
 .btn-sm {
@@ -177,6 +334,10 @@ function clearFilters() {
   .filter-group {
     min-width: calc(50% - var(--spacing-sm));
   }
+  
+  .search-group {
+    min-width: 100%;
+  }
 }
 
 @media (max-width: 640px) {
@@ -184,7 +345,8 @@ function clearFilters() {
     flex-direction: column;
   }
   
-  .filter-group {
+  .filter-group,
+  .search-group {
     width: 100%;
     min-width: unset;
   }

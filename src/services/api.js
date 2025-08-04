@@ -202,14 +202,66 @@ export const API = {
     }
   },
 
-  async getYearGroups() {
+  async getYearGroups(establishmentId) {
     try {
-      const response = await apiClient.get(`${this.getBaseUrl()}/api/year-groups`)
+      const params = establishmentId ? { establishment_id: establishmentId } : {}
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/year-groups`, { params })
       return response.data
     } catch (error) {
       if (import.meta.env.DEV) {
         console.warn('Using mock data for year groups')
         return MOCK_DATA.yearGroups
+      }
+      throw error
+    }
+  },
+
+  async getGroups(establishmentId) {
+    try {
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/groups`, {
+        params: { establishment_id: establishmentId }
+      })
+      return response.data
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Using mock data for groups')
+        return ['Group A', 'Group B', 'Group C']
+      }
+      throw error
+    }
+  },
+
+  async getFaculties(establishmentId) {
+    try {
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/faculties`, {
+        params: { establishment_id: establishmentId }
+      })
+      return response.data
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Using mock data for faculties')
+        return ['Mathematics', 'Science', 'English', 'History', 'Arts']
+      }
+      throw error
+    }
+  },
+
+  async searchStudents(establishmentId, searchTerm) {
+    try {
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/students/search`, {
+        params: { 
+          establishment_id: establishmentId,
+          q: searchTerm
+        }
+      })
+      return response.data
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Using mock data for student search')
+        return [
+          { id: '1', name: 'John Doe', yearGroup: '10', displayText: 'John Doe (10)' },
+          { id: '2', name: 'Jane Smith', yearGroup: '11', displayText: 'Jane Smith (11)' }
+        ]
       }
       throw error
     }

@@ -23,35 +23,19 @@ export const useDashboardStore = defineStore('dashboard', {
     
     // Filters
     filters: {
-      academicYear: 'all',
-      keyStage: 'all', 
       yearGroup: 'all',
-      vespaArea: 'all',
-      questionSubTheme: 'all',
+      group: 'all',
+      faculty: 'all',
+      studentId: null,
       cycle: 1
     },
     
-    // Filter options
-    filterOptions: {
-      academicYears: [],
-      keyStages: [],
-      yearGroups: [],
-      vespaAreas: [
-        { value: 'all', label: 'All VESPA Areas' },
-        { value: 'vision', label: 'Vision' },
-        { value: 'effort', label: 'Effort' },
-        { value: 'systems', label: 'Systems' },
-        { value: 'practice', label: 'Practice' },
-        { value: 'attitude', label: 'Attitude' }
-      ],
-      questionSubThemes: []
-    },
+    // Filter options are now loaded dynamically in FilterBar component
     
     // Loading states
     loading: {
       init: false,
-      data: false,
-      filters: false
+      data: false
     },
     
     // Error states
@@ -137,8 +121,7 @@ export const useDashboardStore = defineStore('dashboard', {
           await this.loadStaffAdminEstablishment()
         }
         
-        // Load filter options
-        await this.loadFilterOptions()
+        // Filter options are now loaded dynamically in FilterBar component
         
       } catch (error) {
         this.errors.init = error.message
@@ -202,39 +185,6 @@ export const useDashboardStore = defineStore('dashboard', {
       }
     },
 
-    async loadFilterOptions() {
-      try {
-        this.loading.filters = true
-        
-        // Load all filter options in parallel
-        const [academicYears, keyStages, yearGroups] = await Promise.all([
-          API.getAcademicYears(),
-          API.getKeyStages(),
-          API.getYearGroups()
-        ])
-        
-        this.filterOptions.academicYears = [
-          { value: 'all', label: 'All Academic Years' },
-          ...academicYears.map(year => ({ value: year, label: year }))
-        ]
-        
-        this.filterOptions.keyStages = [
-          { value: 'all', label: 'All Key Stages' },
-          ...keyStages.map(ks => ({ value: ks, label: ks }))
-        ]
-        
-        this.filterOptions.yearGroups = [
-          { value: 'all', label: 'All Year Groups' },
-          ...yearGroups.map(yg => ({ value: yg, label: `Year ${yg}` }))
-        ]
-        
-      } catch (error) {
-        console.error('Failed to load filter options:', error)
-      } finally {
-        this.loading.filters = false
-      }
-    },
-
     async loadDashboardData() {
       console.log('Dashboard Store: loadDashboardData called, selectedEstablishment:', this.selectedEstablishment)
       if (!this.selectedEstablishment) {
@@ -286,11 +236,11 @@ export const useDashboardStore = defineStore('dashboard', {
 
     resetFilters() {
       this.filters = {
-        academicYear: 'all',
-        keyStage: 'all',
         yearGroup: 'all',
-        vespaArea: 'all',
-        questionSubTheme: 'all'
+        group: 'all',
+        faculty: 'all',
+        studentId: null,
+        cycle: this.filters.cycle || 1  // Keep the current cycle
       }
       // Only reload data if an establishment is selected
       if (this.selectedEstablishment) {
