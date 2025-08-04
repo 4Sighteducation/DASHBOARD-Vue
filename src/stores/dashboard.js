@@ -244,6 +244,9 @@ export const useDashboardStore = defineStore('dashboard', {
       this.errors.data = null
       
       try {
+        console.log('Dashboard Store: Starting API calls...')
+        console.log('Dashboard Store: Active filters:', this.activeFilters)
+        
         // Load all data in parallel
         const [statistics, qlaData, wordCloudData, commentInsights] = await Promise.all([
           API.getStatistics(this.selectedEstablishment, this.activeFilters),
@@ -251,6 +254,10 @@ export const useDashboardStore = defineStore('dashboard', {
           API.getWordCloudData(this.selectedEstablishment, this.activeFilters),
           API.getCommentInsights(this.selectedEstablishment, this.activeFilters)
         ])
+        
+        console.log('Dashboard Store: API calls completed')
+        console.log('Dashboard Store: Statistics:', statistics)
+        console.log('Dashboard Store: QLA Data:', qlaData)
         
         this.dashboardData = {
           statistics,
