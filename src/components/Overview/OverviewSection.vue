@@ -202,14 +202,14 @@ const responses = computed(() => {
 const getDistribution = (elementKey) => {
   if (!props.data?.statistics?.distributions) {
     // Return empty distribution
-    return Array(11).fill(0)
+    return Array(10).fill(0)
   }
   
   const distributions = props.data.statistics.distributions
   const elementData = distributions[elementKey]
   
   if (!elementData || !Array.isArray(elementData)) {
-    return Array(11).fill(0)
+    return Array(10).fill(0)
   }
   
   return elementData

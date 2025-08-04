@@ -34,7 +34,7 @@ const props = defineProps({
   distribution: {
     type: Array,
     required: true,
-    validator: (value) => value.length === 11 // 0-10 scores
+    validator: (value) => value.length === 10 // 1-10 scores
   },
   nationalAverage: {
     type: Number,
@@ -76,7 +76,8 @@ const averageScore = computed(() => {
   let weightedSum = 0
   let totalCount = 0
   
-  props.distribution.forEach((count, score) => {
+  props.distribution.forEach((count, index) => {
+    const score = index + 1  // Convert index to score (1-10)
     weightedSum += score * count
     totalCount += count
   })
@@ -151,7 +152,7 @@ function createChart() {
   const ctx = chartCanvas.value?.getContext('2d')
   if (!ctx) return
 
-  const labels = Array.from({ length: 11 }, (_, i) => i.toString())
+  const labels = Array.from({ length: 10 }, (_, i) => (i + 1).toString()) // 1-10
   
   const datasets = [{
     label: 'School',
@@ -163,7 +164,7 @@ function createChart() {
   }]
   
   // Add national distribution line if available
-  if (props.nationalDistribution && props.nationalDistribution.length === 11) {
+  if (props.nationalDistribution && props.nationalDistribution.length === 10) {
     console.log(`[VespaHistogram] Adding national distribution for ${props.title}:`, props.nationalDistribution)
     // Calculate percentages for national data
     const nationalTotal = props.nationalDistribution.reduce((sum, count) => sum + count, 0)
@@ -218,7 +219,7 @@ function createChart() {
           }
         },
         legend: {
-          display: props.nationalDistribution && props.nationalDistribution.length === 11,
+          display: props.nationalDistribution && props.nationalDistribution.length === 10,
           position: 'top',
           labels: {
             color: '#9CA3AF',
@@ -269,7 +270,7 @@ function createChart() {
           },
           title: {
             display: true,
-            text: 'Score (0-10)',
+            text: 'Score (1-10)',
             color: '#9CA3AF'
           },
           ticks: {
