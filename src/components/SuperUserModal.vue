@@ -67,6 +67,11 @@ const filteredEstablishments = computed(() => {
 })
 
 function selectEstablishment(establishment) {
+  console.log('SuperUserModal: Selected establishment:', {
+    id: establishment.id,
+    name: establishment.name,
+    index: props.establishments.findIndex(e => e.id === establishment.id)
+  })
   emit('select', establishment)
 }
 

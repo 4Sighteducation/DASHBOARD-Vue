@@ -150,10 +150,12 @@ export const useDashboardStore = defineStore('dashboard', {
     async loadEstablishments() {
       try {
         const schools = await API.getSchools()
+        console.log('Dashboard Store: Loaded schools from API:', schools.length, 'schools')
+        console.log('Dashboard Store: First 5 schools:', schools.slice(0, 5).map(s => ({ id: s.id, name: s.name })))
         this.establishments = schools.map(school => ({
           id: school.id,
           name: school.name,
-          type: school.type
+          type: school.type || 'School'
         }))
       } catch (error) {
         console.error('Failed to load establishments:', error)

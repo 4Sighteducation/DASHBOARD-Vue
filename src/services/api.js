@@ -21,7 +21,7 @@ apiClient.interceptors.request.use(
     // Get config from global
     const dashboardConfig = window.DASHBOARD_CONFIG
     if (dashboardConfig) {
-      // Add Knack headers - even though we use Supabase, these identify the Knack app context
+      // Add Knack API headers if needed
       if (dashboardConfig.knackAppId) {
         config.headers['X-Knack-Application-Id'] = dashboardConfig.knackAppId
       }
