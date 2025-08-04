@@ -4,8 +4,8 @@
     <div class="eri-value">
       <div class="value">{{ value.toFixed(1) }}</div>
       <div class="label">ERI</div>
-      <div class="vs-national" v-if="national">
-        vs {{ national.toFixed(1) }} national
+      <div class="rating" :style="{ color: getGaugeColor(value) }">
+        {{ getRatingText(value) }}
       </div>
     </div>
   </div>
@@ -43,6 +43,14 @@ function getGaugeColor(value) {
   if (value >= 3) return '#60A5FA' // Good - Blue
   if (value >= 2) return '#F59E0B' // Fair - Orange
   return '#EF4444' // Poor - Red
+}
+
+// Get rating text based on value
+function getRatingText(value) {
+  if (value >= 4) return 'Excellent'
+  if (value >= 3) return 'Good'
+  if (value >= 2) return 'Fair'
+  return 'Poor'
 }
 
 // Calculate angle for value (1-5 scale mapped to 180 degree arc)
@@ -177,7 +185,7 @@ function updateGauge() {
 
 .eri-value {
   position: absolute;
-  top: 65%;
+  top: 85%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
@@ -196,11 +204,12 @@ function updateGauge() {
   margin-top: 0.25rem;
 }
 
-.vs-national {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
+.rating {
+  font-size: 0.875rem;
+  font-weight: 600;
   margin-top: 0.25rem;
-  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 canvas {

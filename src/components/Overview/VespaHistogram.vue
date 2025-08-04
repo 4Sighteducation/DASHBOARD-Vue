@@ -172,21 +172,34 @@ function createChart() {
       nationalTotal > 0 ? (count / nationalTotal * 100) : 0
     )
     
-    // Show as percentage on a secondary y-axis
+    // Calculate the maximum value from school distribution for scaling
+    const maxSchoolCount = Math.max(...props.distribution)
+    const schoolTotal = props.distribution.reduce((sum, count) => sum + count, 0)
+    
+    // Scale national percentages to match the school data scale
+    // Each national percentage point should be positioned relative to school data
+    const scaledNationalData = nationalPercentages.map((pct, index) => {
+      // Get school percentage for this score
+      const schoolPct = schoolTotal > 0 ? (props.distribution[index] / schoolTotal * 100) : 0
+      // Position the national point at the correct height on the bar
+      return (pct / 100) * schoolTotal
+    })
+    
     console.log(`[VespaHistogram] National percentages for ${props.title}:`, nationalPercentages)
+    console.log(`[VespaHistogram] Scaled national data for ${props.title}:`, scaledNationalData)
     
     datasets.push({
-      label: 'National %',
-      data: nationalPercentages,
+      label: 'National Distribution',
+      data: scaledNationalData,
       type: 'line',
       borderColor: '#FFD93D',
-      backgroundColor: 'transparent',
-      borderWidth: 3,
-      pointRadius: 4,
+      backgroundColor: '#FFD93D',
+      borderWidth: 2,
+      pointRadius: 5,
       pointBackgroundColor: '#FFD93D',
-      pointBorderColor: '#FFD93D',
-      tension: 0.3,
-      yAxisID: 'y1' // Use secondary y-axis
+      pointBorderColor: '#0F0F23',
+      pointBorderWidth: 2,
+      tension: 0.2
     })
   } else {
     console.log(`[VespaHistogram] No valid national distribution for ${props.title}:`, {
@@ -205,6 +218,14 @@ function createChart() {
       responsive: true,
       maintainAspectRatio: true,
       aspectRatio: 1.5,
+      layout: {
+        padding: {
+          top: 20,
+          right: 10,
+          bottom: 10,
+          left: 10
+        }
+      },
       plugins: {
         title: {
           display: true,
@@ -213,6 +234,10 @@ function createChart() {
           font: {
             size: 14,
             weight: 'bold'
+          },
+          padding: {
+            top: 0,
+            bottom: 10
           }
         },
         legend: {
@@ -220,7 +245,11 @@ function createChart() {
           position: 'top',
           labels: {
             color: '#9CA3AF',
-            usePointStyle: true
+            usePointStyle: true,
+            padding: 10,
+            font: {
+              size: 11
+            }
           }
         },
         tooltip: {
@@ -231,10 +260,19 @@ function createChart() {
           borderWidth: 1,
           callbacks: {
             label: function(context) {
-              const value = context.raw
-              const total = totalResponses.value
-              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
-              return `${value} students (${percentage}%)`
+              if (context.dataset.type === 'line') {
+                // For national distribution line
+                const nationalTotal = props.nationalDistribution.reduce((sum, count) => sum + count, 0)
+                const nationalPct = nationalTotal > 0 ? 
+                  ((props.nationalDistribution[context.dataIndex] / nationalTotal) * 100).toFixed(1) : 0
+                return `National: ${nationalPct}%`
+              } else {
+                // For school bars
+                const value = context.raw
+                const total = totalResponses.value
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
+                return `${value} students (${percentage}%)`
+              }
             }
           }
         }
@@ -273,30 +311,6 @@ function createChart() {
           ticks: {
             color: '#9CA3AF'
           }
-        },
-        y1: {
-          type: 'linear',
-          display: true,
-          position: 'right',
-          grid: {
-            drawOnChartArea: false
-          },
-          title: {
-            display: true,
-            text: 'National %',
-            color: '#FFD93D'
-          },
-          ticks: {
-            color: '#FFD93D',
-            callback: function(value) {
-              return value + '%'
-            }
-          },
-          min: 0,
-          max: Math.max(20, Math.ceil(Math.max(...(props.nationalDistribution || []).map((v, i) => {
-            const total = (props.nationalDistribution || []).reduce((sum, count) => sum + count, 0)
-            return total > 0 ? (v / total * 100) : 0
-          })) / 5) * 5)
         }
       }
     }
@@ -305,8 +319,6 @@ function createChart() {
   // Add national average line if provided
   if (props.nationalAverage !== null && props.nationalAverage !== undefined) {
     console.log(`[VespaHistogram] Adding national average line for ${props.title}: ${props.nationalAverage}`)
-    // Find max Y value for the line height
-    const maxY = Math.max(...props.distribution)
     
     if (!chartConfig.options.plugins) {
       chartConfig.options.plugins = {}
@@ -321,21 +333,30 @@ function createChart() {
           borderColor: '#FFD93D',
           borderWidth: 3,
           borderDash: [5, 5],
+          z: 10, // Bring to front
           label: {
             display: true,
-            content: `Avg: ${props.nationalAverage.toFixed(1)}`,
-            position: 'start',
+            content: `National: ${props.nationalAverage.toFixed(1)}`,
+            position: 'end',
             backgroundColor: 'rgba(255, 217, 61, 0.95)',
             font: {
               weight: 'bold',
-              size: 12
+              size: 11
             },
             color: '#0F0F23',
-            yAdjust: -20,
-            xAdjust: 0
+            yAdjust: -8,
+            xAdjust: 0,
+            padding: {
+              top: 2,
+              bottom: 2,
+              left: 4,
+              right: 4
+            },
+            z: 10
           }
         }
-      }
+      },
+      clip: false // Allow annotations to extend outside chart area
     }
   } else {
     console.log(`[VespaHistogram] No national average for ${props.title}:`, props.nationalAverage)

@@ -10,12 +10,6 @@
       </select>
     </div>
 
-    <!-- Small VESPA Radar Chart -->
-    <div class="small-chart-container">
-      <h4>VESPA Scores</h4>
-      <VespaRadarChart :data="vespaScores" :size="150" />
-    </div>
-
     <!-- ERI Speedometer -->
     <div class="eri-container">
       <h4>
@@ -87,7 +81,6 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import VespaRadarChart from './VespaRadarChart.vue'
 import ERISpeedometer from './ERISpeedometer.vue'
 import Modal from '../common/Modal.vue'
 

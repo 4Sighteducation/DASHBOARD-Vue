@@ -148,8 +148,8 @@ const maxYValue = computed(() => {
     }
   }
   
-  // Round up to nearest 100
-  return Math.ceil(maxCount / 100) * 100
+  // Round up to nearest 10 and add 20
+  return Math.ceil(maxCount / 10) * 10 + 20
 })
 
 // Split elements for 2-row layout
