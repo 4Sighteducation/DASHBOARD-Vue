@@ -104,30 +104,66 @@ function createChart() {
         legend: {
           position: 'bottom',
           labels: {
-            color: '#a8b2d1',
-            padding: 20
+            color: '#e5e7eb',
+            padding: 20,
+            font: {
+              size: 12
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          titleColor: '#ffffff',
+          bodyColor: '#ffffff',
+          callbacks: {
+            label: function(context) {
+              const value = context.parsed.r
+              // If values are 0-100, convert to 1-10 for display
+              const displayValue = value > 10 ? (value / 10).toFixed(1) : value.toFixed(1)
+              return context.dataset.label + ': ' + displayValue
+            }
           }
         }
       },
       scales: {
         r: {
           beginAtZero: true,
-          max: 10,
+          max: 100, // Expect 0-100 scale
+          min: 0,
           ticks: {
-            color: '#64748b',
-            backdropColor: 'transparent',
-            stepSize: 2
+            color: '#9ca3af',
+            backdropColor: 'rgba(17, 24, 39, 0.8)',
+            backdropPadding: 4,
+            stepSize: 20,
+            callback: function(value) {
+              // Show as 0-10 scale
+              return (value / 10).toFixed(0)
+            }
           },
           grid: {
+            color: 'rgba(255, 255, 255, 0.1)',
+            circular: true
+          },
+          angleLines: {
             color: 'rgba(255, 255, 255, 0.1)'
           },
           pointLabels: {
-            color: '#a8b2d1',
+            color: '#e5e7eb',
             font: {
-              size: 12,
-              weight: '500'
-            }
+              size: 14,
+              weight: '600'
+            },
+            padding: 10
           }
+        }
+      },
+      elements: {
+        line: {
+          borderWidth: 3
+        },
+        point: {
+          radius: 4,
+          hoverRadius: 6
         }
       }
     }

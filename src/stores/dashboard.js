@@ -27,7 +27,8 @@ export const useDashboardStore = defineStore('dashboard', {
       keyStage: 'all', 
       yearGroup: 'all',
       vespaArea: 'all',
-      questionSubTheme: 'all'
+      questionSubTheme: 'all',
+      cycle: 1
     },
     
     // Filter options

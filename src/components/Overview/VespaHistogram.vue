@@ -172,24 +172,21 @@ function createChart() {
       nationalTotal > 0 ? (count / nationalTotal * 100) : 0
     )
     
-    // Scale to match school data display
-    const maxSchoolCount = Math.max(...props.distribution)
-    const scaleFactor = maxSchoolCount / 100
-    const scaledNationalData = nationalPercentages.map(pct => pct * scaleFactor)
-    console.log(`[VespaHistogram] Scaled national data for ${props.title}:`, scaledNationalData)
+    // Show as percentage on a secondary y-axis
+    console.log(`[VespaHistogram] National percentages for ${props.title}:`, nationalPercentages)
     
     datasets.push({
-      label: 'National',
-      data: scaledNationalData,
+      label: 'National %',
+      data: nationalPercentages,
       type: 'line',
       borderColor: '#FFD93D',
       backgroundColor: 'transparent',
-      borderWidth: 2,
-      pointRadius: 3,
+      borderWidth: 3,
+      pointRadius: 4,
       pointBackgroundColor: '#FFD93D',
       pointBorderColor: '#FFD93D',
-      tension: 0.4,
-      borderDash: [2, 2]
+      tension: 0.3,
+      yAxisID: 'y1' // Use secondary y-axis
     })
   } else {
     console.log(`[VespaHistogram] No valid national distribution for ${props.title}:`, {
@@ -276,6 +273,30 @@ function createChart() {
           ticks: {
             color: '#9CA3AF'
           }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          grid: {
+            drawOnChartArea: false
+          },
+          title: {
+            display: true,
+            text: 'National %',
+            color: '#FFD93D'
+          },
+          ticks: {
+            color: '#FFD93D',
+            callback: function(value) {
+              return value + '%'
+            }
+          },
+          min: 0,
+          max: Math.max(20, Math.ceil(Math.max(...(props.nationalDistribution || []).map((v, i) => {
+            const total = (props.nationalDistribution || []).reduce((sum, count) => sum + count, 0)
+            return total > 0 ? (v / total * 100) : 0
+          })) / 5) * 5)
         }
       }
     }
@@ -296,21 +317,22 @@ function createChart() {
         nationalAvgLine: {
           type: 'line',
           scaleID: 'x',
-          value: props.nationalAverage,
+          value: props.nationalAverage - 1, // Adjust for 0-based index (score 1 is at index 0)
           borderColor: '#FFD93D',
           borderWidth: 3,
-          borderDash: [6, 3],
+          borderDash: [5, 5],
           label: {
             display: true,
-            content: `National: ${props.nationalAverage.toFixed(1)}`,
-            position: 'end',
-            backgroundColor: 'rgba(255, 217, 61, 0.9)',
+            content: `Avg: ${props.nationalAverage.toFixed(1)}`,
+            position: 'start',
+            backgroundColor: 'rgba(255, 217, 61, 0.95)',
             font: {
               weight: 'bold',
-              size: 11
+              size: 12
             },
             color: '#0F0F23',
-            yAdjust: -10
+            yAdjust: -20,
+            xAdjust: 0
           }
         }
       }

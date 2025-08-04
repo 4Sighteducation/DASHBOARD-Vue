@@ -395,3 +395,68 @@ Frontend:
 - DASHBOARD-Vue/src/components/Overview/OverviewSection.vue (10-value arrays)
 - DASHBOARD-Vue/vite.config.js (vuedash1q → vuedash1r)
 - dashboard-frontend/src/AppLoaderCopoy.js (CDN update)
+
+Recent Updates (January 2025 - Session 5 - National Data Fixes & UI Improvements)
+================================================================================
+
+19. National Data Calculation Order Fixed
+-----------------------------------------
+Problem: National statistics table only contains overall mean, not individual VESPA elements
+Solution: Reversed calculation order:
+1. Primary: Calculate from current_school_averages table using weighted averages
+2. Fallback: Use national_statistics when element-specific data becomes available
+
+```python
+# Calculate weighted average for each element
+element_sums[elem] += mean_val * count_val
+element_counts[elem] += count_val
+national_avg = element_sums[elem] / element_counts[elem]
+```
+
+20. Backend Distribution Error Fixed
+------------------------------------
+Problem: "column vespa_scores.establishment_id does not exist"
+Solution: Query students first, then get their vespa_scores:
+```python
+students_sample = supabase_client.table('students')\
+    .select('id')\
+    .eq('establishment_id', est['id'])
+vespa_sample = supabase_client.table('vespa_scores')\
+    .in_('student_id', student_ids)
+```
+
+21. UI Improvements
+-------------------
+**VespaHistogram.vue**:
+- National distribution shown as percentages on secondary y-axis
+- Vertical line shows national average position
+- Fixed overall histogram to get nationalOverall from correct location
+
+**ERISpeedometer.vue**:
+- Added color zones (Red/Orange/Blue/Green) with transparency
+- National average shown as yellow line on gauge
+- Two datasets: background zones + value indicator
+
+**VespaRadarChart.vue**:
+- Fixed scaling to expect 0-100 values (converted from 0-10)
+- Improved styling with better colors and labels
+- Added tooltips showing 1-10 scale values
+
+22. Cycle Filter Connected
+--------------------------
+- Added cycle to filters state in dashboard store
+- Cycle changes trigger data reload via updateFilter
+- API passes cycle parameter to backend
+
+Files Modified in This Session
+------------------------------
+Backend:
+- app.py (national data calculation order, distribution fix, empty nationalDistributions)
+Frontend:
+- DASHBOARD-Vue/src/components/Overview/OverviewSection.vue (overall national average fix)
+- DASHBOARD-Vue/src/components/Overview/VespaHistogram.vue (percentage display, vertical average line)
+- DASHBOARD-Vue/src/components/Overview/ERISpeedometer.vue (color zones, national line)
+- DASHBOARD-Vue/src/components/Overview/VespaRadarChart.vue (scaling fix, styling)
+- DASHBOARD-Vue/src/stores/dashboard.js (added cycle filter)
+- DASHBOARD-Vue/vite.config.js (vuedash1s → vuedash1t)
+- dashboard-frontend/src/AppLoaderCopoy.js (CDN update)

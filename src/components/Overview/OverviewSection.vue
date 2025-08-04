@@ -216,6 +216,13 @@ const getDistribution = (elementKey) => {
 }
 
 const getNationalAverage = (elementKey) => {
+  if (elementKey === 'overall') {
+    // Overall is stored separately
+    const overallAvg = props.data?.statistics?.vespaScores?.nationalOverall || null
+    console.log(`[getNationalAverage] overall: value=${overallAvg}`)
+    return overallAvg
+  }
+  
   if (!props.data?.statistics?.comparison?.national) {
     console.log(`[getNationalAverage] No national comparison data for ${elementKey}`)
     return null

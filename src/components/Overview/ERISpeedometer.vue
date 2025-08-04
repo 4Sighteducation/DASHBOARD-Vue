@@ -73,18 +73,40 @@ function createGauge() {
   const ctx = chartCanvas.value?.getContext('2d')
   if (!ctx) return
 
-  // Create a doughnut chart that looks like a gauge
+  // Create colored segments for the gauge
+  const segments = [
+    { value: 1, color: '#EF4444' },  // 1-2: Poor (Red)
+    { value: 1, color: '#F59E0B' },  // 2-3: Fair (Orange)
+    { value: 1, color: '#60A5FA' },  // 3-4: Good (Blue)
+    { value: 1, color: '#10B981' }   // 4-5: Excellent (Green)
+  ]
+
   const data = {
-    datasets: [{
-      data: [props.value - 1, 5 - props.value], // Current value and remaining
-      backgroundColor: [
-        getGaugeColor(props.value),
-        'rgba(255, 255, 255, 0.1)'
-      ],
-      borderWidth: 0,
-      circumference: 180,
-      rotation: 270
-    }]
+    datasets: [
+      // Background segments showing color zones
+      {
+        data: segments.map(s => s.value),
+        backgroundColor: segments.map(s => s.color + '40'), // 40% opacity
+        borderWidth: 0,
+        circumference: 180,
+        rotation: 270
+      },
+      // Actual value indicator
+      {
+        data: [props.value - 1, 5 - props.value],
+        backgroundColor: [
+          getGaugeColor(props.value),
+          'transparent'
+        ],
+        borderWidth: 2,
+        borderColor: [
+          getGaugeColor(props.value),
+          'transparent'
+        ],
+        circumference: 180,
+        rotation: 270
+      }
+    ]
   }
 
   const options = {
@@ -98,21 +120,51 @@ function createGauge() {
         enabled: false
       }
     },
-    cutout: '75%'
+    cutout: '70%'
   }
 
   chartInstance = new Chart(ctx, {
     type: 'doughnut',
     data: data,
-    options: options
+    options: options,
+    plugins: [{
+      afterDraw: (chart) => {
+        // Draw national average indicator if provided
+        if (props.national) {
+          const ctx = chart.ctx
+          const centerX = chart.width / 2
+          const centerY = chart.height / 2
+          const radius = chart.innerRadius + (chart.outerRadius - chart.innerRadius) / 2
+          
+          // Calculate angle for national average
+          const angle = valueToAngle(props.national) * (Math.PI / 180)
+          const x = centerX + Math.cos(angle) * radius
+          const y = centerY + Math.sin(angle) * radius
+          
+          // Draw line
+          ctx.save()
+          ctx.strokeStyle = '#FFD93D'
+          ctx.lineWidth = 3
+          ctx.beginPath()
+          ctx.moveTo(centerX + Math.cos(angle) * (chart.innerRadius - 10), 
+                     centerY + Math.sin(angle) * (chart.innerRadius - 10))
+          ctx.lineTo(centerX + Math.cos(angle) * (chart.outerRadius + 10), 
+                     centerY + Math.sin(angle) * (chart.outerRadius + 10))
+          ctx.stroke()
+          ctx.restore()
+        }
+      }
+    }]
   })
 }
 
 function updateGauge() {
   if (!chartInstance) return
   
-  chartInstance.data.datasets[0].data = [props.value - 1, 5 - props.value]
-  chartInstance.data.datasets[0].backgroundColor[0] = getGaugeColor(props.value)
+  // Update the value indicator (second dataset)
+  chartInstance.data.datasets[1].data = [props.value - 1, 5 - props.value]
+  chartInstance.data.datasets[1].backgroundColor[0] = getGaugeColor(props.value)
+  chartInstance.data.datasets[1].borderColor[0] = getGaugeColor(props.value)
   chartInstance.update()
 }
 </script>
