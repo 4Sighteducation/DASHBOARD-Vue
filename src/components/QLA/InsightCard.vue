@@ -46,12 +46,12 @@ const colorClass = computed(() => {
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  padding: var(--spacing-lg);
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border-bottom-width: 4px;
-  min-height: 200px;
+  min-height: 240px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -98,23 +98,26 @@ const colorClass = computed(() => {
 }
 
 .insight-title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.2;
+  min-height: 2.4em;
 }
 
 .insight-percentage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .percentage-value {
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 700;
   line-height: 1;
+  margin-bottom: var(--spacing-xs);
 }
 
 .excellent {
@@ -193,15 +196,14 @@ const colorClass = computed(() => {
 }
 
 .insight-question {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  margin: var(--spacing-xs) 0;
+  margin: var(--spacing-sm) 0;
   text-align: center;
-  line-height: 1.3;
-  min-height: 2.6em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  line-height: 1.4;
+  min-height: 3em;
+  display: block;
+  word-wrap: break-word;
 }
 
 .insight-meta {

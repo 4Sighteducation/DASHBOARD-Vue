@@ -156,14 +156,15 @@ function handleInsightClick(insight) {
 
 .insights-grid {
   display: grid;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
   width: 100%;
+  padding: var(--spacing-sm) 0;
 }
 
 /* Desktop: 4 columns (default) */
 @media (min-width: 1024px) {
   .insights-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(200px, 1fr));
   }
 }
 
