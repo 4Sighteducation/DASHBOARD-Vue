@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import TopBottomQuestions from './TopBottomQuestions.vue'
 import QuestionnaireInsights from './QuestionnaireInsights.vue'
 
@@ -37,8 +37,16 @@ const props = defineProps({
 })
 
 // Debug logging
-console.log('[QLASection] Component mounted with data:', props.data)
-console.log('[QLASection] QLA Data:', props.data?.qlaData)
+onMounted(() => {
+  console.log('[QLASection] Component mounted with data:', props.data)
+  console.log('[QLASection] QLA Data:', props.data?.qlaData)
+})
+
+// Watch for data changes
+watch(() => props.data, (newData) => {
+  console.log('[QLASection] Data changed:', newData)
+  console.log('[QLASection] QLA Data after change:', newData?.qlaData)
+}, { deep: true })
 
 // Top and Bottom Questions
 const topQuestions = computed(() => {

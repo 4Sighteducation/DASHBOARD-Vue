@@ -231,6 +231,8 @@ export const useDashboardStore = defineStore('dashboard', {
           commentInsights
         }
         
+        console.log('[Dashboard Store] Dashboard data set successfully')
+        
       } catch (error) {
         this.errors.data = error.message
         throw error
