@@ -161,25 +161,58 @@ function createGauge() {
           const angleInDegrees = 270 + (normalizedValue * 180) // 270 to 450 (90) degrees
           const angleInRadians = angleInDegrees * (Math.PI / 180)
           
-          // Draw line
+          // Draw line with higher contrast
           ctx.save()
-          ctx.strokeStyle = '#FFD93D'
-          ctx.lineWidth = 4
-          ctx.setLineDash([5, 3])
+          
+          // Draw thicker background line for visibility
+          ctx.strokeStyle = '#000000'
+          ctx.lineWidth = 6
           ctx.beginPath()
-          ctx.moveTo(centerX + Math.cos(angleInRadians) * (chart.innerRadius - 5), 
-                     centerY + Math.sin(angleInRadians) * (chart.innerRadius - 5))
-          ctx.lineTo(centerX + Math.cos(angleInRadians) * (chart.outerRadius + 5), 
-                     centerY + Math.sin(angleInRadians) * (chart.outerRadius + 5))
+          ctx.moveTo(centerX + Math.cos(angleInRadians) * (chart.innerRadius - 10), 
+                     centerY + Math.sin(angleInRadians) * (chart.innerRadius - 10))
+          ctx.lineTo(centerX + Math.cos(angleInRadians) * (chart.outerRadius + 10), 
+                     centerY + Math.sin(angleInRadians) * (chart.outerRadius + 10))
           ctx.stroke()
           
-          // Add a label for the national value
+          // Draw yellow line on top
+          ctx.strokeStyle = '#FFD93D'
+          ctx.lineWidth = 4
+          ctx.beginPath()
+          ctx.moveTo(centerX + Math.cos(angleInRadians) * (chart.innerRadius - 10), 
+                     centerY + Math.sin(angleInRadians) * (chart.innerRadius - 10))
+          ctx.lineTo(centerX + Math.cos(angleInRadians) * (chart.outerRadius + 10), 
+                     centerY + Math.sin(angleInRadians) * (chart.outerRadius + 10))
+          ctx.stroke()
+          
+          // Draw arrow/triangle at the outer end
+          const arrowSize = 8
+          const arrowX = centerX + Math.cos(angleInRadians) * (chart.outerRadius + 10)
+          const arrowY = centerY + Math.sin(angleInRadians) * (chart.outerRadius + 10)
+          
           ctx.fillStyle = '#FFD93D'
-          ctx.font = 'bold 10px sans-serif'
+          ctx.beginPath()
+          ctx.moveTo(arrowX + Math.cos(angleInRadians) * arrowSize, 
+                     arrowY + Math.sin(angleInRadians) * arrowSize)
+          ctx.lineTo(arrowX + Math.cos(angleInRadians + Math.PI/2) * arrowSize/2, 
+                     arrowY + Math.sin(angleInRadians + Math.PI/2) * arrowSize/2)
+          ctx.lineTo(arrowX + Math.cos(angleInRadians - Math.PI/2) * arrowSize/2, 
+                     arrowY + Math.sin(angleInRadians - Math.PI/2) * arrowSize/2)
+          ctx.closePath()
+          ctx.fill()
+          
+          // Add a label for the national value with background
+          const labelX = centerX + Math.cos(angleInRadians) * (chart.outerRadius + 25)
+          const labelY = centerY + Math.sin(angleInRadians) * (chart.outerRadius + 25)
+          
+          // Draw background for label
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+          ctx.fillRect(labelX - 15, labelY - 8, 30, 16)
+          
+          // Draw label text
+          ctx.fillStyle = '#FFD93D'
+          ctx.font = 'bold 12px sans-serif'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          const labelX = centerX + Math.cos(angleInRadians) * (chart.outerRadius + 15)
-          const labelY = centerY + Math.sin(angleInRadians) * (chart.outerRadius + 15)
           ctx.fillText(props.national.toFixed(1), labelX, labelY)
           
           ctx.restore()
