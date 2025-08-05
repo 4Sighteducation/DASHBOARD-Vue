@@ -148,6 +148,16 @@ watch(() => props.distribution, () => {
   }
 }, { deep: true })
 
+// Helper function to calculate appropriate step size based on max value
+function calculateStepSize(maxValue) {
+  if (maxValue <= 10) return 1
+  if (maxValue <= 20) return 2
+  if (maxValue <= 50) return 5
+  if (maxValue <= 100) return 10
+  if (maxValue <= 200) return 20
+  return Math.ceil(maxValue / 10)
+}
+
 function createChart() {
   const ctx = chartCanvas.value?.getContext('2d')
   if (!ctx) return
@@ -292,7 +302,7 @@ function createChart() {
           },
           ticks: {
             color: '#9CA3AF',
-            stepSize: props.maxYValue > 0 ? Math.max(10, Math.ceil(props.maxYValue / 10)) : 10,
+            stepSize: props.maxYValue > 0 ? calculateStepSize(props.maxYValue) : 10,
             callback: function(value) {
               return Number.isInteger(value) ? value : ''
             }

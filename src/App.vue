@@ -65,6 +65,13 @@
       @select="handleEstablishmentSelect"
       @close="showSuperUserModal = false"
     />
+
+    <!-- Loading Modal for filters/data operations -->
+    <LoadingModal 
+      :is-loading="filterLoading"
+      title="Applying Filters"
+      message="Processing your selection, this may take a moment..."
+    />
   </div>
 </template>
 
@@ -74,6 +81,7 @@ import { useDashboardStore } from './stores/dashboard'
 import DashboardHeader from './components/DashboardHeader.vue'
 import FilterBar from './components/FilterBar.vue'
 import SuperUserModal from './components/SuperUserModal.vue'
+import LoadingModal from './components/common/LoadingModal.vue'
 import OverviewSection from './components/Overview/OverviewSection.vue'
 import QLASection from './components/QLA/QLASection.vue'
 import InsightsSection from './components/Insights/InsightsSection.vue'
@@ -87,6 +95,7 @@ const error = ref(null)
 const sectionLoading = ref(false)
 const activeTab = ref('overview')
 const showSuperUserModal = ref(false)
+const filterLoading = ref(false)
 
 // Computed
 const userEmail = computed(() => store.userEmail)
@@ -154,8 +163,13 @@ function handleEstablishmentSelect(establishment) {
   loadDashboardData()
 }
 
-function handleFilterChange(filterType, value) {
-  store.updateFilter(filterType, value)
+async function handleFilterChange(filterType, value) {
+  filterLoading.value = true
+  try {
+    await store.updateFilter(filterType, value)
+  } finally {
+    filterLoading.value = false
+  }
 }
 
 function retry() {

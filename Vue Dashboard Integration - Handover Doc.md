@@ -547,3 +547,58 @@ Next Steps for Filters:
 2. Build and deploy frontend (npm run build)
 3. Test all filters with real data
 4. Apply same filter logic to QLA and Comment Insights endpoints
+
+Recent Updates (January 2025 - Session 7 - Dynamic Histogram Scaling & Loading Modal)
+==================================================================================
+
+27. Dynamic Histogram Y-Axis Scaling
+------------------------------------
+Problem: Histogram axes remain fixed when filtering reduces data significantly
+Solution: Implemented dynamic Y-axis scaling based on actual data ranges
+
+Changes to OverviewSection.vue:
+- Updated maxYValue computation with tiered scaling:
+  - ≤10 students: max + 2
+  - ≤50 students: round to nearest 5 + 5
+  - ≤100 students: round to nearest 10 + 10
+  - >100 students: round to nearest 50 + 20
+
+Changes to VespaHistogram.vue:
+- Added calculateStepSize helper function for dynamic tick intervals
+- Step sizes adjust based on max value (1, 2, 5, 10, 20, etc.)
+
+28. Loading Modal for All Filter Operations
+-------------------------------------------
+Problem: Filter calculations take time, especially for large datasets
+Solution: Added loading modal that appears during all filter changes
+
+New Components:
+- LoadingModal.vue - Reusable loading indicator with spinner
+
+Changes to App.vue:
+- Added filterLoading state
+- Made handleFilterChange async
+- Shows LoadingModal during filter operations
+
+Changes to dashboard store:
+- Made updateFilter method async
+- Returns promise from loadDashboardData
+
+The loading modal appears for:
+- Year Group filter changes
+- Group filter changes
+- Faculty filter changes
+- Student search selection
+- Cycle changes
+- Clear filters action
+
+Files Modified in This Session
+------------------------------
+Frontend:
+- DASHBOARD-Vue/src/components/Overview/OverviewSection.vue (dynamic Y-axis scaling)
+- DASHBOARD-Vue/src/components/Overview/VespaHistogram.vue (dynamic step sizes)
+- DASHBOARD-Vue/src/components/common/LoadingModal.vue (new loading indicator)
+- DASHBOARD-Vue/src/App.vue (loading state management)
+- DASHBOARD-Vue/src/stores/dashboard.js (async updateFilter)
+- DASHBOARD-Vue/vite.config.js (vuedash1w → vuedash1x)
+- dashboard-frontend/src/AppLoaderCopoy.js (CDN update)

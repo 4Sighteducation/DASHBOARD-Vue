@@ -224,12 +224,12 @@ export const useDashboardStore = defineStore('dashboard', {
       console.log('Dashboard Store: selectedEstablishment set to:', this.selectedEstablishment)
     },
 
-    updateFilter(filterType, value) {
+    async updateFilter(filterType, value) {
       if (this.filters.hasOwnProperty(filterType)) {
         this.filters[filterType] = value
         // Reload data when filters change, but only if an establishment is selected
         if (this.selectedEstablishment) {
-          this.loadDashboardData()
+          await this.loadDashboardData()
         }
       }
     },
