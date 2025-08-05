@@ -50,6 +50,7 @@ const colorClass = computed(() => {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  border-bottom-width: 4px;
 }
 
 .insight-card.clickable {
@@ -113,35 +114,71 @@ const colorClass = computed(() => {
 }
 
 .excellent {
-  border-bottom: 4px solid var(--success-color);
+  border-bottom-color: #10b981;
+  background: linear-gradient(to bottom, var(--card-bg) 90%, rgba(16, 185, 129, 0.1));
 }
 
 .excellent .percentage-value {
-  color: var(--success-color);
+  color: #10b981;
+}
+
+.excellent .insight-title {
+  color: #10b981;
+}
+
+.excellent .insight-icon {
+  color: #10b981;
 }
 
 .good {
-  border-bottom: 4px solid var(--info-color);
+  border-bottom-color: #3b82f6;
+  background: linear-gradient(to bottom, var(--card-bg) 90%, rgba(59, 130, 246, 0.1));
 }
 
 .good .percentage-value {
-  color: var(--info-color);
+  color: #3b82f6;
+}
+
+.good .insight-title {
+  color: #3b82f6;
+}
+
+.good .insight-icon {
+  color: #3b82f6;
 }
 
 .average {
-  border-bottom: 4px solid var(--warning-color);
+  border-bottom-color: #f59e0b;
+  background: linear-gradient(to bottom, var(--card-bg) 90%, rgba(245, 158, 11, 0.1));
 }
 
 .average .percentage-value {
-  color: var(--warning-color);
+  color: #f59e0b;
+}
+
+.average .insight-title {
+  color: #f59e0b;
+}
+
+.average .insight-icon {
+  color: #f59e0b;
 }
 
 .poor {
-  border-bottom: 4px solid var(--danger-color);
+  border-bottom-color: #ef4444;
+  background: linear-gradient(to bottom, var(--card-bg) 90%, rgba(239, 68, 68, 0.1));
 }
 
 .poor .percentage-value {
-  color: var(--danger-color);
+  color: #ef4444;
+}
+
+.poor .insight-title {
+  color: #ef4444;
+}
+
+.poor .insight-icon {
+  color: #ef4444;
 }
 
 .percentage-label {

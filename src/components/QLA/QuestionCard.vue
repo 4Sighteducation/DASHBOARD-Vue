@@ -20,7 +20,7 @@
     <div class="stats-details">
       <div class="stat-item">
         <span class="stat-label">Responses</span>
-        <span class="stat-value">{{ statistics.count || question.n || 0 }}</span>
+        <span class="stat-value">{{ question.count || question.n || statistics.count || 0 }}</span>
       </div>
       <div class="stat-item">
         <span class="stat-label">Std Dev</span>
@@ -28,7 +28,7 @@
       </div>
       <div class="stat-item">
         <span class="stat-label">Mode</span>
-        <span class="stat-value">{{ statistics.mode || estimatedMode }}</span>
+        <span class="stat-value">{{ question.mode || statistics.mode || estimatedMode }}</span>
       </div>
     </div>
   </div>
@@ -80,7 +80,7 @@ const scoreClass = computed(() => {
 })
 
 const formattedStdDev = computed(() => {
-  const stdDev = props.statistics.stdDev || props.question.std_dev || estimatedStdDev.value
+  const stdDev = props.question.std_dev || props.statistics.std_dev || props.statistics.stdDev || estimatedStdDev.value
   return stdDev.toFixed(2)
 })
 
@@ -98,11 +98,14 @@ const estimatedMode = computed(() => {
 
 const distribution = computed(() => {
   // Use provided distribution or estimate it
+  if (props.question.distribution && props.question.distribution.some(v => v > 0)) {
+    return props.question.distribution
+  }
   if (props.statistics.distribution && props.statistics.distribution.some(v => v > 0)) {
     return props.statistics.distribution
   }
   
-  return estimateDistribution(score.value, props.question.n || props.statistics.count || 100)
+  return estimateDistribution(score.value, props.question.n || props.question.count || props.statistics.count || 100)
 })
 
 // Functions
