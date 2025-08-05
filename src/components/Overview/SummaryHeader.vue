@@ -136,8 +136,8 @@ const totalStudents = computed(() => {
 })
 
 const responses = computed(() => {
-  // For now, use total students - in future, check for actual responses
-  return props.data?.statistics?.totalStudents || 0
+  // Use totalResponses if available, otherwise fall back to totalStudents
+  return props.data?.statistics?.totalResponses || props.data?.statistics?.totalStudents || 0
 })
 
 const completionRate = computed(() => {

@@ -602,3 +602,50 @@ Frontend:
 - DASHBOARD-Vue/src/stores/dashboard.js (async updateFilter)
 - DASHBOARD-Vue/vite.config.js (vuedash1w → vuedash1x)
 - dashboard-frontend/src/AppLoaderCopoy.js (CDN update)
+
+Recent Updates (January 2025 - Session 8 - Critical Fixes)
+========================================================
+
+29. Student Search Fix
+----------------------
+Problem: Student search failing with `'SyncSelectRequestBuilder' object has no attribute 'or_'`
+Solution: Rewrote search to use separate queries for name and email, then merge results
+
+Backend Changes:
+- Replaced single `.or_()` query with two separate queries
+- Search by name using `.ilike('name', f'%{search_term}%')`
+- Search by email using `.ilike('email', f'%{search_term}%')`
+- Combine results and remove duplicates
+
+30. Student Responses Count Fix
+--------------------------------
+Problem: Responses count not updating with filters, always showing total students
+Solution: Added separate totalResponses field to API response
+
+Backend Changes:
+- Added `totalResponses` to statistics endpoint response
+- `totalStudents` = total enrolled students
+- `totalResponses` = students who completed VESPA in current cycle
+
+Frontend Changes:
+- Updated SummaryHeader to use `totalResponses` when available
+
+31. Histogram Scaling Simplification
+------------------------------------
+Problem: Complex scaling rules, user wants simple "highest + 20" rule
+Solution: Simplified maxYValue calculation
+
+Changes to OverviewSection.vue:
+- Removed tiered scaling logic
+- Now simply: `return maxCount + 20`
+
+Files Modified in This Session
+------------------------------
+Backend:
+- app.py (student search fix, added totalResponses to statistics)
+
+Frontend:
+- DASHBOARD-Vue/src/components/Overview/OverviewSection.vue (simplified Y-axis scaling)
+- DASHBOARD-Vue/src/components/Overview/SummaryHeader.vue (use totalResponses)
+- DASHBOARD-Vue/vite.config.js (vuedash1y → vuedash1z)
+- dashboard-frontend/src/AppLoaderCopoy.js (CDN update)

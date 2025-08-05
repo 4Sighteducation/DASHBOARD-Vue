@@ -148,16 +148,8 @@ const maxYValue = computed(() => {
     }
   }
   
-  // Dynamic scaling based on data size
-  if (maxCount <= 10) {
-    return Math.max(10, maxCount + 2) // Small datasets: add small buffer
-  } else if (maxCount <= 50) {
-    return Math.ceil(maxCount / 5) * 5 + 5 // Medium datasets: round to nearest 5
-  } else if (maxCount <= 100) {
-    return Math.ceil(maxCount / 10) * 10 + 10 // Larger datasets: round to nearest 10
-  } else {
-    return Math.ceil(maxCount / 50) * 50 + 20 // Very large datasets: round to nearest 50
-  }
+  // Simple rule: highest distribution + 20
+  return maxCount + 20
 })
 
 // Split elements for 2-row layout
