@@ -1,5 +1,15 @@
 <template>
   <div class="qla-top-bottom-container">
+    <!-- Cycle Selector -->
+    <div class="qla-cycle-selector">
+      <label>Select Cycle:</label>
+      <select v-model="selectedCycle" @change="handleCycleChange">
+        <option :value="1">Cycle 1</option>
+        <option :value="2">Cycle 2</option>
+        <option :value="3">Cycle 3</option>
+      </select>
+    </div>
+    
     <!-- Top Questions Section -->
     <div class="qla-questions-section top-questions">
       <h3>
@@ -37,7 +47,7 @@
     <div class="qla-questions-section bottom-questions">
       <h3>
         <div class="title-content">
-          <span class="icon">⚠️</span> Lowest Scoring Questions
+          <span class="icon">⚠️</span> Lowest Statement Responses
         </div>
       </h3>
       
@@ -68,8 +78,11 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useDashboardStore } from '../../stores/dashboard'
 import SimpleQuestionCard from './SimpleQuestionCard.vue'
 import QLAInfoModal from './QLAInfoModal.vue'
+
+const store = useDashboardStore()
 
 const props = defineProps({
   topQuestions: {
@@ -88,6 +101,11 @@ const props = defineProps({
 
 
 const showInfoModal = ref(false)
+const selectedCycle = ref(store.filters.cycle || 1)
+
+const handleCycleChange = () => {
+  store.updateFilter('cycle', selectedCycle.value)
+}
 </script>
 
 <style scoped>
@@ -96,6 +114,44 @@ const showInfoModal = ref(false)
   grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   gap: var(--spacing-xl);
   margin-top: var(--spacing-lg);
+}
+
+/* Cycle Selector */
+.qla-cycle-selector {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.qla-cycle-selector label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.qla-cycle-selector select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.875rem;
+  min-width: 120px;
+}
+
+.qla-cycle-selector select:hover {
+  border-color: var(--primary-color);
+}
+
+.qla-cycle-selector select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .qla-questions-section {

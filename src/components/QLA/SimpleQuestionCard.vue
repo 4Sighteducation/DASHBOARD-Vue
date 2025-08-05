@@ -58,21 +58,14 @@ const formattedStdDev = computed(() => {
   return stdDev.toFixed(2)
 })
 
-// Color class based on score for top questions, inverse for bottom
+// Color class based on score with new breakpoints
 const colorClass = computed(() => {
-  if (props.type === 'top') {
-    // Top questions - higher is better
-    if (score.value >= 4) return 'excellent'
-    if (score.value >= 3.5) return 'good'
-    if (score.value >= 3) return 'average'
-    return 'poor'
-  } else {
-    // Bottom questions - lower scores need attention
-    if (score.value <= 2) return 'poor'
-    if (score.value <= 2.5) return 'average'
-    if (score.value <= 3) return 'good'
-    return 'excellent'
-  }
+  // Same breakpoints for both top and bottom questions
+  // Bottom questions are already sorted by lowest score
+  if (score.value >= 4.4) return 'excellent'
+  if (score.value >= 3.4) return 'good'
+  if (score.value >= 2.4) return 'average'
+  return 'poor' // < 2.4 = Needs Attention
 })
 </script>
 
@@ -98,18 +91,19 @@ const colorClass = computed(() => {
 
 .question-rank {
   position: absolute;
-  top: var(--spacing-sm);
-  right: var(--spacing-sm);
-  width: 32px;
-  height: 32px;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: var(--text-primary);
+  z-index: 10;
 }
 
 .question-content {
@@ -124,6 +118,7 @@ const colorClass = computed(() => {
   line-height: 1.4;
   color: var(--text-primary);
   margin: 0;
+  margin-right: 30px; /* Space for rank number */
   flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 3;
