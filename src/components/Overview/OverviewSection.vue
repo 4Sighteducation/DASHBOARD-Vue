@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import SummaryHeader from './SummaryHeader.vue'
 import VespaHistogram from './VespaHistogram.vue'
@@ -85,8 +85,14 @@ const emit = defineEmits(['update-filter'])
 // Store
 const store = useDashboardStore()
 
-// State
-const currentCycle = ref(1)
+// State - Use the cycle from store filters as initial value
+const currentCycle = ref(store.filters.cycle || 1)
+
+// Watch for store cycle changes to keep local state in sync
+watch(() => store.filters.cycle, (newCycle) => {
+  console.log('[OverviewSection] Store cycle changed to:', newCycle)
+  currentCycle.value = newCycle
+})
 
 // Check if a student is selected
 const isStudentSelected = computed(() => {

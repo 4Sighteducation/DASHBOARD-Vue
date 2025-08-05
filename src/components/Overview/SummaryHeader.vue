@@ -128,16 +128,22 @@ const eriValue = computed(() => {
 })
 
 const nationalERI = computed(() => {
-  return props.data?.statistics?.nationalERI || 0
+  const value = props.data?.statistics?.nationalERI || 0
+  console.log('[SummaryHeader] National ERI computed value:', value, 'from statistics:', props.data?.statistics)
+  return value
 })
 
 const totalStudents = computed(() => {
-  return props.data?.statistics?.totalStudents || 0
+  const value = props.data?.statistics?.totalStudents || 0
+  console.log('[SummaryHeader] Total Students:', value)
+  return value
 })
 
 const responses = computed(() => {
   // Use totalResponses if available, otherwise fall back to totalStudents
-  return props.data?.statistics?.totalResponses || props.data?.statistics?.totalStudents || 0
+  const value = props.data?.statistics?.totalResponses || props.data?.statistics?.totalStudents || 0
+  console.log('[SummaryHeader] Total Responses:', value, 'Cycle:', props.currentCycle)
+  return value
 })
 
 const completionRate = computed(() => {

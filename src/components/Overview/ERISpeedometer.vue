@@ -78,13 +78,14 @@ watch(() => props.value, () => {
 })
 
 // Watch for national prop changes to redraw the chart with the national line
-watch(() => props.national, () => {
-  if (chartInstance && props.national) {
+watch(() => props.national, (newVal, oldVal) => {
+  console.log('[ERISpeedometer] National value changed:', oldVal, '->', newVal)
+  if (chartInstance && newVal !== null && newVal !== undefined) {
     // Destroy and recreate the chart to show the national line
     chartInstance.destroy()
     createGauge()
   }
-})
+}, { immediate: true })
 
 function createGauge() {
   const ctx = chartCanvas.value?.getContext('2d')
@@ -147,7 +148,8 @@ function createGauge() {
     plugins: [{
       afterDraw: (chart) => {
         // Draw national average indicator if provided
-        if (props.national) {
+        if (props.national !== null && props.national !== undefined && props.national > 0) {
+          console.log('[ERISpeedometer] Drawing national line at:', props.national)
           const ctx = chart.ctx
           const centerX = chart.width / 2
           const centerY = chart.height / 2
