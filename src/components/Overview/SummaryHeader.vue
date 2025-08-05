@@ -20,6 +20,9 @@
           </svg>
         </button>
       </h4>
+      <div v-if="nationalERI" class="national-eri-text">
+        National Average: {{ nationalERI.toFixed(1) }}
+      </div>
       <ERISpeedometer 
         :value="eriValue" 
         :national="nationalERI"
@@ -204,6 +207,15 @@ const completionClass = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+}
+
+.national-eri-text {
+  color: #FFD93D;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: -8px;
+  margin-bottom: 12px;
 }
 
 .info-button {
