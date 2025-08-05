@@ -1,5 +1,5 @@
 <template>
-  <div class="qla-top-bottom-container">
+  <div class="qla-top-bottom-wrapper">
     <!-- Cycle Selector -->
     <div class="qla-cycle-selector">
       <label>Select Cycle:</label>
@@ -10,64 +10,67 @@
       </select>
     </div>
     
-    <!-- Top Questions Section -->
-    <div class="qla-questions-section top-questions">
-      <h3>
-        <div class="title-content">
-          <span class="icon">🏆</span> Top Statement Responses
+    <!-- Questions Container - Side by Side on Desktop -->
+    <div class="qla-questions-container">
+      <!-- Top Questions Section -->
+      <div class="qla-questions-section top-questions">
+        <h3>
+          <div class="title-content">
+            <span class="icon">🏆</span> Top Statement Responses
+          </div>
+          <button class="qla-info-btn" @click="showInfoModal = true">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </h3>
+        
+        <div class="question-grid" v-if="!loading && topQuestions.length > 0">
+          <SimpleQuestionCard
+            v-for="(question, index) in topQuestions.slice(0, 4)"
+            :key="question.id"
+            :question="question"
+            :rank="index + 1"
+            :type="'top'"
+          />
         </div>
-        <button class="qla-info-btn" @click="showInfoModal = true">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-          </svg>
-        </button>
-      </h3>
-      
-      <div class="question-grid" v-if="!loading && topQuestions.length > 0">
-        <SimpleQuestionCard
-          v-for="(question, index) in topQuestions.slice(0, 4)"
-          :key="question.id"
-          :question="question"
-          :rank="index + 1"
-          :type="'top'"
-        />
+        
+        <div v-else-if="loading" class="qla-loading">
+          <div class="spinner"></div>
+          <p>Loading question analysis...</p>
+        </div>
+        
+        <div v-else class="empty-state">
+          <p>No top questions available</p>
+        </div>
       </div>
-      
-      <div v-else-if="loading" class="qla-loading">
-        <div class="spinner"></div>
-        <p>Loading question analysis...</p>
-      </div>
-      
-      <div v-else class="empty-state">
-        <p>No top questions available</p>
-      </div>
-    </div>
 
-    <!-- Bottom Questions Section -->
-    <div class="qla-questions-section bottom-questions">
-      <h3>
-        <div class="title-content">
-          <span class="icon">⚠️</span> Lowest Statement Responses
+      <!-- Bottom Questions Section -->
+      <div class="qla-questions-section bottom-questions">
+        <h3>
+          <div class="title-content">
+            <span class="icon">⚠️</span> Lowest Statement Responses
+          </div>
+        </h3>
+        
+        <div class="question-grid" v-if="!loading && bottomQuestions.length > 0">
+          <SimpleQuestionCard
+            v-for="(question, index) in bottomQuestions.slice(0, 4)"
+            :key="question.id"
+            :question="question"
+            :rank="index + 1"
+            :type="'bottom'"
+          />
         </div>
-      </h3>
-      
-      <div class="question-grid" v-if="!loading && bottomQuestions.length > 0">
-        <SimpleQuestionCard
-          v-for="(question, index) in bottomQuestions.slice(0, 4)"
-          :key="question.id"
-          :question="question"
-          :rank="index + 1"
-          :type="'bottom'"
-        />
-      </div>
-      
-      <div v-else-if="loading" class="qla-loading">
-        <div class="spinner"></div>
-        <p>Loading question analysis...</p>
-      </div>
-      
-      <div v-else class="empty-state">
-        <p>No questions needing attention</p>
+        
+        <div v-else-if="loading" class="qla-loading">
+          <div class="spinner"></div>
+          <p>Loading question analysis...</p>
+        </div>
+        
+        <div v-else class="empty-state">
+          <p>No questions needing attention</p>
+        </div>
       </div>
     </div>
 
@@ -109,16 +112,23 @@ const handleCycleChange = () => {
 </script>
 
 <style scoped>
-.qla-top-bottom-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+.qla-top-bottom-wrapper {
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-xl);
   margin-top: var(--spacing-lg);
 }
 
+/* Questions Container - Side by Side Layout */
+.qla-questions-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xl);
+  width: 100%;
+}
+
 /* Cycle Selector */
 .qla-cycle-selector {
-  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
@@ -228,21 +238,27 @@ const handleCycleChange = () => {
   color: #ef4444;
 }
 
-/* Question Grid Container */
+/* Question Grid Container - 2x2 Layout */
 .question-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
   margin-top: var(--spacing-lg);
+  width: 100%;
 }
 
-@media (max-width: 1400px) {
+/* Ensure cards take full height */
+.question-grid > * {
+  min-height: 220px;
+}
+
+@media (max-width: 768px) {
   .question-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .question-grid {
     grid-template-columns: 1fr;
   }
@@ -287,8 +303,9 @@ const handleCycleChange = () => {
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .qla-top-bottom-container {
+  .qla-questions-container {
     grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
   }
 }
 
@@ -299,10 +316,6 @@ const handleCycleChange = () => {
   
   .qla-questions-section h3 {
     font-size: 1.1rem;
-  }
-  
-  .question-cards {
-    max-height: 400px;
   }
 }
 </style>
