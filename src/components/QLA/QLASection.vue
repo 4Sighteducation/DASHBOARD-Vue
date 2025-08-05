@@ -51,6 +51,8 @@ const props = defineProps({
 const cycleLoading = ref(false)
 const previousCycle = ref(store.filters.cycle)
 
+
+
 // Watch for cycle changes
 watch(() => store.filters.cycle, (newCycle, oldCycle) => {
   if (newCycle !== oldCycle && previousCycle.value !== newCycle) {
@@ -59,6 +61,8 @@ watch(() => store.filters.cycle, (newCycle, oldCycle) => {
     // The loading will be turned off when new data arrives
   }
 })
+
+
 
 // Turn off cycle loading when data changes
 watch(() => props.data?.qlaData, (newData) => {
