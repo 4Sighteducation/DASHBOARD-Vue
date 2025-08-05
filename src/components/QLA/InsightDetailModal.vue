@@ -77,60 +77,60 @@ const insightDetails = {
     description: 'Measures students\' belief that intelligence and abilities can be developed through effort and learning.',
     importance: 'Students with a growth mindset are more likely to persist through challenges, embrace feedback, and achieve better academic outcomes.',
     questions: {
-      'Q5': 'No matter who you are, you can change your intelligence a lot',
-      'Q26': 'Your intelligence is something about you that you can change very much'
+      'q5': 'No matter who you are, you can change your intelligence a lot',
+      'q26': 'Your intelligence is something about you that you can change very much'
     }
   },
   academic_momentum: {
     description: 'Captures students\' intrinsic drive, engagement with learning, and commitment to excellence.',
     importance: 'Students with high academic momentum are self-motivated and more likely to sustain performance through challenges.',
     questions: {
-      'Q14': 'I strive to achieve the goals I set for myself',
-      'Q16': 'I enjoy learning new things',
-      'Q17': 'I\'m not happy unless my work is the best it can be',
-      'Q9': 'I am a hard working student'
+      'q14': 'I strive to achieve the goals I set for myself',
+      'q16': 'I enjoy learning new things',
+      'q17': 'I\'m not happy unless my work is the best it can be',
+      'q9': 'I am a hard working student'
     }
   },
   study_effectiveness: {
     description: 'Measures adoption of evidence-based study techniques that improve learning and retention.',
     importance: 'Effective study techniques significantly improve exam performance and long-term retention of material.',
     questions: {
-      'Q7': 'I test myself on important topics until I remember them',
-      'Q12': 'I spread out my revision, rather than cramming at the last minute',
-      'Q15': 'I summarise important information in diagrams, tables or lists'
+      'q7': 'I test myself on important topics until I remember them',
+      'q12': 'I spread out my revision, rather than cramming at the last minute',
+      'q15': 'I summarise important information in diagrams, tables or lists'
     }
   },
   exam_confidence: {
     description: 'Students\' belief in their ability to achieve their potential in final exams.',
     importance: 'Confidence correlates with performance - students who believe they can succeed are more likely to do so.',
     questions: {
-      'OUTCOME_Q_CONFIDENT': 'I am confident I will achieve my potential in my final exams'
+      'outcome_q_confident': 'I am confident I will achieve my potential in my final exams'
     }
   },
   organization_skills: {
     description: 'Measures students\' ability to plan, organize, and manage their academic responsibilities.',
     importance: 'Well-organized students are less stressed, more productive, and better able to balance multiple demands.',
     questions: {
-      'Q2': 'I plan and organise my time to get my work done',
-      'Q22': 'My books/files are organised',
-      'Q11': 'I always meet deadlines'
+      'q2': 'I plan and organise my time to get my work done',
+      'q22': 'My books/files are organised',
+      'q11': 'I always meet deadlines'
     }
   },
   resilience_factor: {
     description: 'Students\' ability to bounce back from setbacks and maintain a positive outlook.',
     importance: 'Resilient students persist through challenges and learn from failures rather than being defeated by them.',
     questions: {
-      'Q13': 'I don\'t let a poor test/assessment result get me down for too long',
-      'Q8': 'I have a positive view of myself',
-      'Q27': 'I like hearing feedback about how I can improve'
+      'q13': 'I don\'t let a poor test/assessment result get me down for too long',
+      'q8': 'I have a positive view of myself',
+      'q27': 'I like hearing feedback about how I can improve'
     }
   },
   stress_management: {
     description: 'Students\' ability to handle academic pressure and control exam nerves.',
     importance: 'Effective stress management improves performance, wellbeing, and prevents burnout.',
     questions: {
-      'Q20': 'I feel I can cope with the pressure at school/college/University',
-      'Q28': 'I can control my nerves in tests/practical assessments'
+      'q20': 'I feel I can cope with the pressure at school/college/University',
+      'q28': 'I can control my nerves in tests/practical assessments'
     }
   },
   active_learning: {
@@ -138,15 +138,15 @@ const insightDetails = {
     importance: 'Active learning techniques are proven to be more effective than passive studying.',
     questions: {
       'Q7': 'I test myself on important topics until I remember them',
-      'Q23': 'When preparing for a test/exam I teach someone else the material',
-      'Q19': 'When revising I mix different kinds of topics/subjects in one study session'
+      'q23': 'When preparing for a test/exam I teach someone else the material',
+      'q19': 'When revising I mix different kinds of topics/subjects in one study session'
     }
   },
   support_readiness: {
     description: 'Students\' perception of having adequate support to achieve their goals.',
     importance: 'Students who feel supported are more likely to seek help when needed and achieve better outcomes.',
     questions: {
-      'OUTCOME_Q_SUPPORT': 'I have the support I need to achieve this year'
+      'outcome_q_support': 'I have the support I need to achieve this year'
     }
   },
   time_management: {
@@ -154,7 +154,7 @@ const insightDetails = {
     importance: 'Good time management reduces stress, improves work quality, and enables better work-life balance.',
     questions: {
       'Q2': 'I plan and organise my time to get my work done',
-      'Q4': 'I complete all my homework on time',
+      'q4': 'I complete all my homework on time',
       'Q11': 'I always meet deadlines'
     }
   },
@@ -162,15 +162,15 @@ const insightDetails = {
     description: 'Students\' belief in their academic abilities and positive self-perception.',
     importance: 'Academic confidence is a strong predictor of achievement and willingness to take on challenges.',
     questions: {
-      'Q10': 'I am confident in my academic ability',
-      'Q8': 'I have a positive view of myself'
+      'q10': 'I am confident in my academic ability',
+      'q8': 'I have a positive view of myself'
     }
   },
   revision_readiness: {
     description: 'Students\' perception of being equipped to handle revision and study challenges.',
     importance: 'Feeling prepared for revision reduces anxiety and improves study effectiveness.',
     questions: {
-      'OUTCOME_Q_EQUIPPED': 'I feel equipped to face the study and revision challenges this year'
+      'outcome_q_equipped': 'I feel equipped to face the study and revision challenges this year'
     }
   }
 }

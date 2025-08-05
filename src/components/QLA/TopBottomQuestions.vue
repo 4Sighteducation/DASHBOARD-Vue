@@ -13,14 +13,13 @@
         </button>
       </h3>
       
-      <div class="question-cards" v-if="!loading && topQuestions.length > 0">
-        <QuestionCard
-          v-for="(question, index) in topQuestions"
+      <div class="question-grid" v-if="!loading && topQuestions.length > 0">
+        <SimpleQuestionCard
+          v-for="(question, index) in topQuestions.slice(0, 4)"
           :key="question.id"
           :question="question"
           :rank="index + 1"
           :type="'top'"
-          :statistics="question"
         />
       </div>
       
@@ -38,18 +37,17 @@
     <div class="qla-questions-section bottom-questions">
       <h3>
         <div class="title-content">
-          <span class="icon">⚠️</span> Responses Needing Attention
+          <span class="icon">⚠️</span> Lowest Scoring Questions
         </div>
       </h3>
       
-      <div class="question-cards" v-if="!loading && bottomQuestions.length > 0">
-        <QuestionCard
-          v-for="(question, index) in bottomQuestions"
+      <div class="question-grid" v-if="!loading && bottomQuestions.length > 0">
+        <SimpleQuestionCard
+          v-for="(question, index) in bottomQuestions.slice(0, 4)"
           :key="question.id"
           :question="question"
           :rank="index + 1"
           :type="'bottom'"
-          :statistics="question"
         />
       </div>
       
@@ -70,7 +68,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import QuestionCard from './QuestionCard.vue'
+import SimpleQuestionCard from './SimpleQuestionCard.vue'
 import QLAInfoModal from './QLAInfoModal.vue'
 
 const props = defineProps({
@@ -174,35 +172,27 @@ const showInfoModal = ref(false)
   color: #ef4444;
 }
 
-/* Question Cards Container */
-.question-cards {
-  display: flex;
-  flex-direction: column;
+/* Question Grid Container */
+.question-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-md);
-  max-height: 600px;
-  overflow-y: auto;
-  padding-right: var(--spacing-sm);
-  margin-right: calc(var(--spacing-sm) * -1);
+  margin-top: var(--spacing-lg);
 }
 
-/* Custom Scrollbar */
-.question-cards::-webkit-scrollbar {
-  width: 6px;
+@media (max-width: 1400px) {
+  .question-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.question-cards::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
+@media (max-width: 768px) {
+  .question-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.question-cards::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
 
-.question-cards::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
 
 /* Loading State */
 .qla-loading {
