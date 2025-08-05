@@ -871,3 +871,156 @@ Outstanding Issues
 - QLA and Comment Insights sections still need implementation
 - Export functionality not implemented
 - Some schools may need data verification for historical years
+Outstanding Issues
+------------------
+- ✅ ~~QLA and Comment Insights sections still need implementation~~ (QLA COMPLETED in Session 11)
+- ❌ Comment Insights/Word Cloud section not implemented
+- ❌ Export functionality not implemented
+- ⚠️ Some schools may need data verification for historical years
+
+Recent Updates (January 2025 - Session 11 - Question Level Analysis Implementation)
+==================================================================================
+
+39. Complete QLA Implementation
+--------------------------------
+Successfully implemented the Question Level Analysis (QLA) section with full functionality:
+
+### Backend Implementation (app.py):
+1. **Created /api/qla endpoint** with comprehensive filtering:
+   - Supports all filters: establishment_id, cycle, academic_year, year_group, group, faculty, student_id
+   - Queries data from `question_statistics` table first (pre-aggregated data)
+   - Falls back to `question_responses` for filtered queries (year group, group, faculty, student)
+   - Calculates top 4 and bottom 4 questions based on mean scores
+   - Implements 12 psychometric insights from grouped questions
+
+2. **Fixed multiple data issues**:
+   - Question ID case mismatch (database uses lowercase: q1, q2, etc.)
+   - Academic year format conversion (2025-26 → 2024/2025)
+   - Student count calculation for insights (shows unique students, not total responses)
+   - Added question text retrieval from `questions` table
+
+### Frontend Implementation:
+1. **New Components Created**:
+   - **SimpleQuestionCard.vue**: Displays individual question with score, distribution, responses
+   - **TopBottomQuestions.vue**: Shows top 4 and bottom 4 scoring questions
+   - **QuestionnaireInsights.vue**: Grid of 12 psychometric insights
+   - **InsightCard.vue**: Individual insight display with color coding
+   - **InsightDetailModal.vue**: Detailed view of each insight with questions
+   - **QLAInfoModal.vue**: Information modal for QLA section
+
+2. **UI/UX Enhancements**:
+   - 4-column grid layout (responsive: 4→3→2→1 columns)
+   - Color-coded cards based on score ranges:
+     - Excellent (green): 4.4-5.0
+     - Good (blue): 3.4-4.3  
+     - Average (orange): 2.4-3.3
+     - Needs Attention (red): < 2.4
+   - Rank numbers positioned in top-right corner
+   - Enhanced modal styling with gradient backgrounds
+   - Cycle filter added to QLA page
+   - Loading modal for cycle changes
+
+3. **Psychometric Insights Implemented**:
+   - Growth Mindset
+   - Academic Momentum
+   - Study Skills
+   - Exam Readiness
+   - Organizational Skills
+   - Resilience
+   - Pressure Handling
+   - Active Learning
+   - Support Readiness
+   - Time Management
+   - Academic Confidence
+   - Revision Readiness
+
+### Data Flow:
+40. Critical Data Connection Warnings
+--------------------------------------
+### ⚠️ IMPORTANT: Common Data Issues to Watch For
+
+1. **Academic Year Format Mismatch**:
+   - Frontend sends: `2025-26`
+   - Database expects: `2024/2025`
+   - Solution: Convert format in backend before querying
+   ```python
+   # Convert 2025-26 to 2024/2025
+   if academic_year and '-' in academic_year:
+       year_parts = academic_year.split('-')
+       start_year = int(year_parts[0])
+       academic_year = f"{start_year-1}/{start_year}"
+   ```
+
+2. **Question ID Case Sensitivity**:
+   - Frontend/Backend configs often use: `Q1, Q2, OUTCOME_Q_CONFIDENT`
+   - Database stores: `q1, q2, outcome_q_confident`
+   - Solution: Always use lowercase when querying database
+
+3. **UUID vs Knack ID Conversion**:
+   - Frontend sends Knack IDs (string format)
+   - Database uses UUIDs
+   - Always use `convert_knack_id_to_uuid()` helper function
+
+4. **SQL Query Pitfalls**:
+   - Supabase client doesn't support `.or_()` method - use separate queries
+   - Column name mismatches (e.g., `response` vs `response_value`)
+   - Always check schema for exact column names
+
+5. **Data Scale Differences**:
+   - VESPA scores: 1-10 scale (not 0-10)
+   - Distributions: 10 values, not 11
+   - Percentage calculations need proper bounds checking
+
+6. **Null Value Handling**:
+   - Many fields can be NULL (academic_year, group, faculty)
+   - Always initialize variables before conditional branches
+   - Check for NULL values before calculations
+
+7. **Performance Considerations**:
+   - Large schools (2000+ students) need batched queries
+   - Pre-aggregated tables (question_statistics) should be used when possible
+   - Only fall back to raw data (question_responses) when filtering
+
+### Files Modified in Session 11:
+Backend:
+- app.py (complete /api/qla endpoint implementation)
+
+Frontend (New):
+- DASHBOARD-Vue/src/components/QLA/SimpleQuestionCard.vue
+- DASHBOARD-Vue/src/components/QLA/InsightDetailModal.vue
+
+Frontend (Modified):
+- DASHBOARD-Vue/src/components/QLA/QLASection.vue
+- DASHBOARD-Vue/src/components/QLA/TopBottomQuestions.vue
+- DASHBOARD-Vue/src/components/QLA/QuestionnaireInsights.vue
+- DASHBOARD-Vue/src/components/QLA/InsightCard.vue
+- DASHBOARD-Vue/src/components/QLA/QuestionCard.vue
+- DASHBOARD-Vue/src/components/QLA/QLAInfoModal.vue
+- DASHBOARD-Vue/src/App.vue
+- DASHBOARD-Vue/src/services/api.js
+- DASHBOARD-Vue/src/stores/dashboard.js
+- DASHBOARD-Vue/vite.config.js (vuedash2k → vuedash2t)
+- dashboard-frontend/src/AppLoaderCopoy.js
+
+Current Status After Session 11
+--------------------------------
+✅ Question Level Analysis fully implemented with:
+  - Top/Bottom questions display
+  - 12 Psychometric insights
+  - All filters working
+  - Cycle selector
+  - Enhanced UI/UX
+  - Loading states
+  - Information modals
+
+✅ Fixed critical data issues:
+  - Academic year format conversion
+  - Question ID case sensitivity
+  - Student count calculations
+  - Distribution data display
+
+Outstanding Issues
+------------------
+- ❌ Comment Insights/Word Cloud section not implemented
+- ❌ Export functionality not implemented
+- ⚠️ Some schools may need data verification for historical years
