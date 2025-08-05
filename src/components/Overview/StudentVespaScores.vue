@@ -3,8 +3,13 @@
     <div class="student-header">
       <h3>Individual VESPA Scores - Cycle {{ cycle }}</h3>
       <p class="student-name">{{ studentName }}</p>
-      <div v-if="hasData" class="completion-status" :class="completionClass">
-        {{ completionStatus }}
+      <div class="header-actions">
+        <div v-if="hasData" class="completion-status" :class="completionClass">
+          {{ completionStatus }}
+        </div>
+        <button v-if="studentId" class="view-responses-btn" @click="showResponsesModal = true">
+          📋 View Questionnaire Responses
+        </button>
       </div>
     </div>
     
@@ -41,12 +46,21 @@
       </table>
     </div>
     </div>
+    
+    <!-- Student Responses Modal -->
+    <StudentResponsesModal 
+      v-if="showResponsesModal"
+      :student-id="studentId"
+      :student-name="studentName"
+      @close="showResponsesModal = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Chart, registerables } from 'chart.js'
+import StudentResponsesModal from '../QLA/StudentResponsesModal.vue'
 
 // Register Chart.js components
 Chart.register(...registerables)
@@ -67,8 +81,15 @@ const props = defineProps({
   studentName: {
     type: String,
     default: 'Selected Student'
+  },
+  studentId: {
+    type: String,
+    default: null
   }
 })
+
+// Modal state
+const showResponsesModal = ref(false)
 
 const chartCanvas = ref(null)
 let chartInstance = null
@@ -370,5 +391,38 @@ td {
   font-size: 0.875rem;
   color: var(--text-tertiary);
   font-style: italic;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.view-responses-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.view-responses-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.view-responses-btn:active {
+  transform: translateY(0);
 }
 </style>

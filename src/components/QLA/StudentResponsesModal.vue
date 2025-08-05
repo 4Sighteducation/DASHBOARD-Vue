@@ -40,8 +40,7 @@
         <table class="responses-table">
           <thead>
             <tr>
-              <th width="10%">Question</th>
-              <th width="60%">Response Statement</th>
+              <th width="70%">Response Statement</th>
               <th width="15%">Score</th>
               <th width="15%">Rating</th>
             </tr>
@@ -50,7 +49,6 @@
             <tr v-for="response in responses.responses" 
                 :key="response.questionId"
                 :class="`rag-${response.ragRating}`">
-              <td class="question-id">{{ formatQuestionId(response.questionId) }}</td>
               <td class="question-text">{{ response.questionText }}</td>
               <td class="response-score">
                 <div class="score-badge" :class="`score-${response.ragRating}`">
@@ -110,20 +108,25 @@ onMounted(async () => {
   }
 })
 
-function formatQuestionId(id) {
-  // Format question ID for display (e.g., q1 → Q1)
-  return id.toUpperCase().replace('_', ' ')
-}
+
 </script>
 
 <style scoped>
 .student-responses-modal :deep(.modal-container) {
-  max-width: 1200px;
+  max-width: 1000px;
   width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-content {
   padding: var(--spacing-lg);
+  overflow-y: auto;
+  max-height: calc(90vh - 100px);
+  display: flex;
+  flex-direction: column;
 }
 
 .student-info {
@@ -159,6 +162,7 @@ function formatQuestionId(id) {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
+  flex-shrink: 0;
 }
 
 .summary-card {
@@ -217,10 +221,12 @@ function formatQuestionId(id) {
 }
 
 .responses-container {
-  max-height: 500px;
+  flex: 1;
   overflow-y: auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
+  min-height: 200px;
+  max-height: 400px;
 }
 
 .responses-table {
@@ -254,12 +260,6 @@ function formatQuestionId(id) {
 .responses-table td {
   padding: var(--spacing-md);
   border-bottom: 1px solid var(--border-light);
-}
-
-.question-id {
-  font-weight: 600;
-  color: var(--text-secondary);
-  font-family: monospace;
 }
 
 .question-text {
@@ -360,5 +360,51 @@ function formatQuestionId(id) {
 .modal-icon {
   font-size: 1.5rem;
   margin-right: var(--spacing-sm);
+}
+
+/* Improve table readability */
+.responses-table {
+  font-size: 0.875rem;
+}
+
+.responses-table tbody tr {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.responses-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* Smooth scrolling */
+.responses-container {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar but keep functionality */
+.responses-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.responses-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.responses-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.responses-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Make score badges more compact */
+.score-badge {
+  font-size: 0.875rem;
+}
+
+/* Improve rating circles */
+.rag-circle {
+  font-size: 0.875rem;
 }
 </style>

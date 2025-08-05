@@ -24,6 +24,7 @@
           :national-averages="nationalAverages"
           :cycle="currentCycle"
           :student-name="selectedStudentName"
+          :student-id="store.filters.studentId"
         />
       </div>
 

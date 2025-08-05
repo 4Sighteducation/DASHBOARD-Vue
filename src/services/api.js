@@ -391,6 +391,42 @@ export const API = {
       .filter(([_, value]) => value !== null && value !== undefined && value !== '')
       .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
       .join('&')
+  },
+
+  async getStudentResponses(studentId, cycle = 1) {
+    try {
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/student-responses`, {
+        params: {
+          student_id: studentId,
+          cycle: cycle
+        }
+      })
+      return response.data
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Using mock data for student responses')
+        // Return mock data for development
+        return {
+          student: {
+            name: 'John Doe',
+            email: 'john.doe@school.edu'
+          },
+          cycle: cycle,
+          summary: {
+            green: 15,
+            amber: 8,
+            red: 3,
+            none: 0
+          },
+          responses: [
+            { questionId: 'q1', questionText: 'I work as hard as I can in most classes', responseValue: 4, ragRating: 'green' },
+            { questionId: 'q2', questionText: 'I complete all my homework on time', responseValue: 3, ragRating: 'amber' },
+            { questionId: 'q3', questionText: 'I enjoy studying', responseValue: 2, ragRating: 'red' }
+          ]
+        }
+      }
+      throw error
+    }
   }
 }
 
