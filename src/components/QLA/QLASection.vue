@@ -15,6 +15,16 @@
 
     <!-- Content -->
     <div v-else class="qla-content">
+      <!-- Student Response Button (shows when student is selected) -->
+      <div v-if="dashboardStore.filters.studentId" class="student-response-section">
+        <button 
+          class="view-responses-btn"
+          @click="showStudentResponses = true">
+          <span class="btn-icon">👤</span>
+          View All Responses for {{ dashboardStore.filters.studentName || 'Selected Student' }}
+        </button>
+      </div>
+
       <!-- Top/Bottom Questions Display -->
       <TopBottomQuestions
         :top-questions="topQuestions"
@@ -29,6 +39,14 @@
         class="qla-insights-section"
       />
     </div>
+    
+    <!-- Student Responses Modal -->
+    <StudentResponsesModal
+      v-if="showStudentResponses && dashboardStore.filters.studentId"
+      :student-id="dashboardStore.filters.studentId"
+      :student-name="dashboardStore.filters.studentName"
+      @close="showStudentResponses = false"
+    />
   </div>
 </template>
 
@@ -38,8 +56,11 @@ import { useDashboardStore } from '../../stores/dashboard'
 import TopBottomQuestions from './TopBottomQuestions.vue'
 import QuestionnaireInsights from './QuestionnaireInsights.vue'
 import LoadingModal from '../common/LoadingModal.vue'
+import StudentResponsesModal from './StudentResponsesModal.vue'
 
 const store = useDashboardStore()
+const dashboardStore = useDashboardStore()
+const showStudentResponses = ref(false)
 
 const props = defineProps({
   data: Object,
@@ -128,6 +149,37 @@ const insights = computed(() => {
 
 .qla-insights-section {
   margin-top: var(--spacing-xl);
+}
+
+.student-response-section {
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.view-responses-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.view-responses-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+}
+
+.btn-icon {
+  font-size: 1.25rem;
 }
 
 .empty-state {
