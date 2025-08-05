@@ -100,11 +100,20 @@ const responses = ref(null)
 const dashboardStore = useDashboardStore()
 
 onMounted(async () => {
+  console.log('[StudentResponsesModal] Mounted with studentId:', props.studentId, 'studentName:', props.studentName)
+  
+  if (!props.studentId) {
+    console.error('[StudentResponsesModal] No student ID provided')
+    return
+  }
+  
   try {
     const cycle = dashboardStore.filters.cycle || 1
+    console.log('[StudentResponsesModal] Fetching responses for cycle:', cycle)
     responses.value = await API.getStudentResponses(props.studentId, cycle)
+    console.log('[StudentResponsesModal] Responses loaded:', responses.value)
   } catch (error) {
-    console.error('Failed to load student responses:', error)
+    console.error('[StudentResponsesModal] Failed to load student responses:', error)
   }
 })
 

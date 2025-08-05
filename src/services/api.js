@@ -394,6 +394,13 @@ export const API = {
   },
 
   async getStudentResponses(studentId, cycle = 1) {
+    console.log('[API] getStudentResponses called with studentId:', studentId, 'cycle:', cycle)
+    
+    if (!studentId) {
+      console.error('[API] Student ID is missing')
+      throw new Error('Student ID is required')
+    }
+    
     try {
       const response = await apiClient.get(`${this.getBaseUrl()}/api/student-responses`, {
         params: {
@@ -401,8 +408,10 @@ export const API = {
           cycle: cycle
         }
       })
+      console.log('[API] Student responses received:', response.data)
       return response.data
     } catch (error) {
+      console.error('[API] Error fetching student responses:', error)
       if (import.meta.env.DEV) {
         console.warn('Using mock data for student responses')
         // Return mock data for development
@@ -425,6 +434,10 @@ export const API = {
           ]
         }
       }
+      // Throw the actual error from the backend if available
+      if (error.response && error.response.data && error.response.data.error) {
+        throw new Error(error.response.data.error)
+      }
       throw error
     }
   }
@@ -441,5 +454,6 @@ export const {
   getQLAData,
   getWordCloudData,
   getCommentInsights,
-  getEstablishmentName
+  getEstablishmentName,
+  getStudentResponses
 } = API
