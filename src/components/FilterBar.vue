@@ -189,6 +189,8 @@ function selectStudent(student) {
   searchResults.value = []
   showSearchResults.value = false
   emit('filter-change', 'studentId', student.id)
+  // Also emit the student name for display
+  emit('filter-change', 'studentName', student.name)
 }
 
 function clearFilters() {

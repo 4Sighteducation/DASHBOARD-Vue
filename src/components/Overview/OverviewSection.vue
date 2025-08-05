@@ -17,8 +17,18 @@
       
 
 
-      <!-- VESPA Score Histograms -->
-      <div class="histograms-section">
+      <!-- Individual Student Scores (when student is selected) -->
+      <div v-if="isStudentSelected" class="student-scores-section">
+        <StudentVespaScores
+          :vespa-scores="studentVespaScores"
+          :national-averages="nationalAverages"
+          :cycle="currentCycle"
+          :student-name="selectedStudentName"
+        />
+      </div>
+
+      <!-- VESPA Score Histograms (when showing all students) -->
+      <div v-else class="histograms-section">
         <h3 class="section-title">VESPA Score Distributions</h3>
         
         <!-- Top row: Vision, Effort, Systems -->
@@ -59,8 +69,10 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useDashboardStore } from '../../stores/dashboard'
 import SummaryHeader from './SummaryHeader.vue'
 import VespaHistogram from './VespaHistogram.vue'
+import StudentVespaScores from './StudentVespaScores.vue'
 
 const props = defineProps({
   data: Object,
@@ -70,8 +82,45 @@ const props = defineProps({
 
 const emit = defineEmits(['update-filter'])
 
+// Store
+const store = useDashboardStore()
+
 // State
 const currentCycle = ref(1)
+
+// Check if a student is selected
+const isStudentSelected = computed(() => {
+  return store.filters.studentId !== null
+})
+
+// Get selected student name
+const selectedStudentName = computed(() => {
+  return store.filters.studentName || 'Selected Student'
+})
+
+// Get individual student VESPA scores
+const studentVespaScores = computed(() => {
+  if (!isStudentSelected.value || !props.data?.statistics?.vespaScores) {
+    return {}
+  }
+  // When a student is selected, vespaScores should contain their individual scores
+  return props.data.statistics.vespaScores
+})
+
+// Get national averages for comparison
+const nationalAverages = computed(() => {
+  if (!props.data?.statistics?.comparison?.national) {
+    return {}
+  }
+  const national = props.data.statistics.comparison.national
+  return {
+    vision: national[0] || 0,
+    effort: national[1] || 0,
+    systems: national[2] || 0,
+    practice: national[3] || 0,
+    attitude: national[4] || 0
+  }
+})
 
 // Event handlers
 const handleCycleChange = (newCycle) => {

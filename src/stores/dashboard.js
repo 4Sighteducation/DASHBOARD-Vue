@@ -27,6 +27,7 @@ export const useDashboardStore = defineStore('dashboard', {
       group: 'all',
       faculty: 'all',
       studentId: null,
+      studentName: null,
       cycle: 1
     },
     
@@ -240,6 +241,7 @@ export const useDashboardStore = defineStore('dashboard', {
         group: 'all',
         faculty: 'all',
         studentId: null,
+        studentName: null,
         cycle: this.filters.cycle || 1  // Keep the current cycle
       }
       // Only reload data if an establishment is selected
