@@ -28,7 +28,8 @@ export const useDashboardStore = defineStore('dashboard', {
       faculty: 'all',
       studentId: null,
       studentName: null,
-      cycle: 1
+      cycle: 1,
+      academicYear: null  // Will be set to current year on init
     },
     
     // Filter options are now loaded dynamically in FilterBar component
@@ -246,7 +247,8 @@ export const useDashboardStore = defineStore('dashboard', {
         faculty: 'all',
         studentId: null,
         studentName: null,
-        cycle: this.filters.cycle || 1  // Keep the current cycle
+        cycle: this.filters.cycle || 1,  // Keep the current cycle
+        academicYear: this.filters.academicYear  // Keep the current academic year
       }
       // Only reload data if an establishment is selected
       if (this.selectedEstablishment) {

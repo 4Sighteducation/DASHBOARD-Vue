@@ -184,36 +184,61 @@ function drawNationalLine() {
   // Draw the national line
   ctx.save()
   
-  // Yellow line
+  // Draw a line that cuts through both gauges
+  // Start from before the outer gauge and go past the inner gauge
+  const lineStartRadius = outerRadius + 15
+  const lineEndRadius = innerRadius - 15
+  
+  // Draw black shadow line first for better contrast
+  ctx.strokeStyle = '#000000'
+  ctx.lineWidth = 4
+  ctx.globalAlpha = 0.3
+  ctx.beginPath()
+  ctx.moveTo(
+    centerX + Math.cos(angleInRadians) * lineStartRadius,
+    centerY + Math.sin(angleInRadians) * lineStartRadius
+  )
+  ctx.lineTo(
+    centerX + Math.cos(angleInRadians) * lineEndRadius,
+    centerY + Math.sin(angleInRadians) * lineEndRadius
+  )
+  ctx.stroke()
+  
+  // Draw yellow line on top
+  ctx.globalAlpha = 1
   ctx.strokeStyle = '#FFD93D'
   ctx.lineWidth = 3
   ctx.shadowColor = '#000000'
-  ctx.shadowBlur = 4
+  ctx.shadowBlur = 6
   ctx.shadowOffsetX = 0
   ctx.shadowOffsetY = 0
   
   ctx.beginPath()
   ctx.moveTo(
-    centerX + Math.cos(angleInRadians) * (innerRadius - 5),
-    centerY + Math.sin(angleInRadians) * (innerRadius - 5)
+    centerX + Math.cos(angleInRadians) * lineStartRadius,
+    centerY + Math.sin(angleInRadians) * lineStartRadius
   )
   ctx.lineTo(
-    centerX + Math.cos(angleInRadians) * (outerRadius + 5),
-    centerY + Math.sin(angleInRadians) * (outerRadius + 5)
+    centerX + Math.cos(angleInRadians) * lineEndRadius,
+    centerY + Math.sin(angleInRadians) * lineEndRadius
   )
   ctx.stroke()
   
-  // Add text label
-  const textX = centerX + Math.cos(angleInRadians) * (outerRadius + 20)
-  const textY = centerY + Math.sin(angleInRadians) * (outerRadius + 20)
+  // Add text label outside the gauge
+  const textX = centerX + Math.cos(angleInRadians) * (outerRadius + 30)
+  const textY = centerY + Math.sin(angleInRadians) * (outerRadius + 30)
   
-  // Reset shadow for text
+  // Draw text background for readability
   ctx.shadowBlur = 0
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+  ctx.fillRect(textX - 45, textY - 10, 90, 20)
+  
+  // Draw text
   ctx.fillStyle = '#FFD93D'
-  ctx.font = 'bold 12px sans-serif'
+  ctx.font = 'bold 11px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(`National ERI - ${props.national}`, textX, textY)
+  ctx.fillText(`National: ${props.national}`, textX, textY)
   
   ctx.restore()
 }
