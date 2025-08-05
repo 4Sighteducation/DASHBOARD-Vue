@@ -277,6 +277,8 @@ export const API = {
         }
       })
       console.log('[API] getStatistics response:', response.data)
+      console.log('[API] National ERI from response:', response.data.nationalERI)
+      console.log('[API] Total Students:', response.data.totalStudents, 'Total Responses:', response.data.totalResponses)
       return response.data
     } catch (error) {
       if (import.meta.env.DEV) {
