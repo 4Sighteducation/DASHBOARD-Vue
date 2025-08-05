@@ -173,9 +173,12 @@ function drawNationalLine() {
   const outerRadius = arc.outerRadius
   
   // Calculate angle for national average
-  // Chart starts at 270 degrees (9 o'clock) and goes 180 degrees clockwise
+  // The gauge is a semi-circle from left (1) to right (5)
+  // Chart.js doughnut starts at -90 degrees (top) by default
+  // With rotation: 270, it starts at 180 degrees (left side)
+  // We need to map 1-5 scale to 180-360 degrees (left to right)
   const normalizedValue = (props.national - 1) / 4 // 0-1 for 1-5 scale
-  const angleInDegrees = 270 + (normalizedValue * 180) // 270 to 450 (90) degrees
+  const angleInDegrees = 180 + (normalizedValue * 180) // 180 to 360 degrees
   const angleInRadians = angleInDegrees * (Math.PI / 180)
   
   // Draw the national line
@@ -195,31 +198,22 @@ function drawNationalLine() {
     centerY + Math.sin(angleInRadians) * (innerRadius - 5)
   )
   ctx.lineTo(
-    centerX + Math.cos(angleInRadians) * (outerRadius + 10),
-    centerY + Math.sin(angleInRadians) * (outerRadius + 10)
+    centerX + Math.cos(angleInRadians) * (outerRadius + 5),
+    centerY + Math.sin(angleInRadians) * (outerRadius + 5)
   )
   ctx.stroke()
   
-  // Draw triangle pointer at the end
-  const pointerX = centerX + Math.cos(angleInRadians) * (outerRadius + 10)
-  const pointerY = centerY + Math.sin(angleInRadians) * (outerRadius + 10)
+  // Add text label
+  const textX = centerX + Math.cos(angleInRadians) * (outerRadius + 20)
+  const textY = centerY + Math.sin(angleInRadians) * (outerRadius + 20)
   
+  // Reset shadow for text
+  ctx.shadowBlur = 0
   ctx.fillStyle = '#FFD93D'
-  ctx.beginPath()
-  ctx.moveTo(
-    pointerX + Math.cos(angleInRadians) * 8,
-    pointerY + Math.sin(angleInRadians) * 8
-  )
-  ctx.lineTo(
-    pointerX + Math.cos(angleInRadians + Math.PI/2) * 4,
-    pointerY + Math.sin(angleInRadians + Math.PI/2) * 4
-  )
-  ctx.lineTo(
-    pointerX + Math.cos(angleInRadians - Math.PI/2) * 4,
-    pointerY + Math.sin(angleInRadians - Math.PI/2) * 4
-  )
-  ctx.closePath()
-  ctx.fill()
+  ctx.font = 'bold 12px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(`National ERI - ${props.national}`, textX, textY)
   
   ctx.restore()
 }
