@@ -207,10 +207,22 @@ export const useDashboardStore = defineStore('dashboard', {
         // Load all data in parallel
         const [statistics, qlaData, wordCloudData, commentInsights] = await Promise.all([
           API.getStatistics(this.selectedEstablishment, this.activeFilters),
-          API.getQLAData(this.selectedEstablishment, this.activeFilters),
+          API.getQLAData(this.selectedEstablishment, this.activeFilters).catch(err => {
+            console.error('[Dashboard Store] QLA API Error:', err)
+            // Return empty structure with insights but no questions
+            return {
+              highLowQuestions: {
+                topQuestions: [],
+                bottomQuestions: []
+              },
+              insights: []
+            }
+          }),
           API.getWordCloudData(this.selectedEstablishment, this.activeFilters),
           API.getCommentInsights(this.selectedEstablishment, this.activeFilters)
         ])
+        
+        console.log('[Dashboard Store] QLA Data loaded:', qlaData)
         
         this.dashboardData = {
           statistics,

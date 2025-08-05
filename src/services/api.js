@@ -292,7 +292,9 @@ export const API = {
   async getQLAData(establishmentId, filters = {}) {
     console.log('[API] getQLAData called with establishmentId:', establishmentId, 'filters:', filters)
     try {
-      const response = await apiClient.get(`${this.getBaseUrl()}/api/qla`, {
+      const url = `${this.getBaseUrl()}/api/qla`
+      console.log('[API] QLA URL:', url)
+      const response = await apiClient.get(url, {
         params: {
           establishment_id: establishmentId,
           ...filters
@@ -302,11 +304,28 @@ export const API = {
       return response.data
     } catch (error) {
       console.error('[API] getQLAData error:', error)
-      if (import.meta.env.DEV) {
-        console.warn('Using mock data for QLA')
-        return MOCK_DATA.qlaData
+      console.error('[API] QLA Error details:', error.response?.data || error.message)
+      // Return structure with empty questions but mock insights for now
+      return {
+        highLowQuestions: {
+          topQuestions: [],
+          bottomQuestions: []
+        },
+        insights: [
+          { id: 'growth_mindset', title: 'Growth Mindset', percentageAgreement: 0, questionIds: ['Q5', 'Q26'], icon: '🌱', totalResponses: 0 },
+          { id: 'academic_momentum', title: 'Academic Momentum', percentageAgreement: 0, questionIds: ['Q14', 'Q16', 'Q17', 'Q9'], icon: '🚀', totalResponses: 0 },
+          { id: 'study_effectiveness', title: 'Study Effectiveness', percentageAgreement: 0, questionIds: ['Q7', 'Q12', 'Q15'], icon: '📚', totalResponses: 0 },
+          { id: 'exam_confidence', title: 'Exam Confidence', percentageAgreement: 0, questionIds: ['OUTCOME_Q_CONFIDENT'], icon: '🎯', totalResponses: 0 },
+          { id: 'organization_skills', title: 'Organization Skills', percentageAgreement: 0, questionIds: ['Q2', 'Q22', 'Q11'], icon: '📋', totalResponses: 0 },
+          { id: 'resilience_factor', title: 'Resilience', percentageAgreement: 0, questionIds: ['Q13', 'Q8', 'Q27'], icon: '💪', totalResponses: 0 },
+          { id: 'stress_management', title: 'Stress Management', percentageAgreement: 0, questionIds: ['Q20', 'Q28'], icon: '😌', totalResponses: 0 },
+          { id: 'active_learning', title: 'Active Learning', percentageAgreement: 0, questionIds: ['Q7', 'Q23', 'Q19'], icon: '🎓', totalResponses: 0 },
+          { id: 'support_readiness', title: 'Support Readiness', percentageAgreement: 0, questionIds: ['OUTCOME_Q_SUPPORT'], icon: '🤝', totalResponses: 0 },
+          { id: 'time_management', title: 'Time Management', percentageAgreement: 0, questionIds: ['Q2', 'Q4', 'Q11'], icon: '⏰', totalResponses: 0 },
+          { id: 'academic_confidence', title: 'Academic Confidence', percentageAgreement: 0, questionIds: ['Q10', 'Q8'], icon: '⭐', totalResponses: 0 },
+          { id: 'revision_readiness', title: 'Revision Ready', percentageAgreement: 0, questionIds: ['OUTCOME_Q_EQUIPPED'], icon: '📖', totalResponses: 0 }
+        ]
       }
-      throw error
     }
   },
 
