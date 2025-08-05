@@ -20,7 +20,7 @@
           :question="question"
           :rank="index + 1"
           :type="'top'"
-          @click="$emit('question-select', question)"
+
         />
       </div>
       
@@ -49,7 +49,7 @@
           :question="question"
           :rank="index + 1"
           :type="'bottom'"
-          @click="$emit('question-select', question)"
+
         />
       </div>
       
@@ -88,7 +88,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['question-select'])
+
 const showInfoModal = ref(false)
 </script>
 

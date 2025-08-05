@@ -13,59 +13,22 @@
         :top-questions="topQuestions"
         :bottom-questions="bottomQuestions"
         :loading="loading"
-        @question-select="handleQuestionSelect"
       />
 
-      <!-- Question Selection -->
-      <div class="qla-controls">
-        <select 
-          v-model="selectedQuestion"
-          class="form-select"
-        >
-          <option value="">Select a question for detailed analysis...</option>
-          <option 
-            v-for="question in questions" 
-            :key="question.id"
-            :value="question.id"
-          >
-            {{ question.text }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Question Analysis -->
-      <div v-if="selectedQuestion" class="question-analysis">
-        <QuestionDetail 
-          :question="currentQuestion"
-          :responses="currentResponses"
-        />
-        
-        <div class="analysis-grid">
-          <ResponseDistribution 
-            :distribution="responseDistribution"
-          />
-          
-          <SubThemeAnalysis 
-            :data="subThemeData"
-          />
-        </div>
-        
-        <ComparativeAnalysis 
-          :schoolData="schoolPerformance"
-          :nationalData="nationalPerformance"
-        />
-      </div>
+      <!-- Questionnaire Insights -->
+      <QuestionnaireInsights 
+        v-if="insights.length > 0"
+        :insights="insights"
+        class="qla-insights-section"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import TopBottomQuestions from './TopBottomQuestions.vue'
-import QuestionDetail from './QuestionDetail.vue'
-import ResponseDistribution from './ResponseDistribution.vue'
-import SubThemeAnalysis from './SubThemeAnalysis.vue'
-import ComparativeAnalysis from './ComparativeAnalysis.vue'
+import QuestionnaireInsights from './QuestionnaireInsights.vue'
 
 const props = defineProps({
   data: Object,
@@ -73,100 +36,19 @@ const props = defineProps({
   loading: Boolean
 })
 
-const selectedQuestion = ref('')
-
-const questions = computed(() => {
-  return props.data?.qlaData?.questions || []
-})
-
 // Top and Bottom Questions
 const topQuestions = computed(() => {
-  if (!props.data?.qlaData) return []
-  
-  // Get top questions from API or calculate from available data
-  if (props.data.qlaData.topQuestions) {
-    return props.data.qlaData.topQuestions
-  }
-  
-  // Calculate from questions if not provided
-  const sortedQuestions = [...questions.value]
-    .filter(q => q.mean_score || q.score)
-    .sort((a, b) => (b.mean_score || b.score) - (a.mean_score || a.score))
-  
-  return sortedQuestions.slice(0, 5)
+  return props.data?.qlaData?.highLowQuestions?.topQuestions || []
 })
 
 const bottomQuestions = computed(() => {
-  if (!props.data?.qlaData) return []
-  
-  // Get bottom questions from API or calculate from available data
-  if (props.data.qlaData.bottomQuestions) {
-    return props.data.qlaData.bottomQuestions
-  }
-  
-  // Calculate from questions if not provided
-  const sortedQuestions = [...questions.value]
-    .filter(q => q.mean_score || q.score)
-    .sort((a, b) => (a.mean_score || a.score) - (b.mean_score || b.score))
-  
-  return sortedQuestions.slice(0, 5)
+  return props.data?.qlaData?.highLowQuestions?.bottomQuestions || []
 })
 
-const currentQuestion = computed(() => {
-  if (!selectedQuestion.value || !props.data?.qlaData) return null
-  return props.data.qlaData.questions.find(q => q.id === selectedQuestion.value)
+// Insights
+const insights = computed(() => {
+  return props.data?.qlaData?.insights || []
 })
-
-const currentResponses = computed(() => {
-  if (!selectedQuestion.value || !props.data?.qlaData) return []
-  return props.data.qlaData.responses[selectedQuestion.value] || []
-})
-
-const responseDistribution = computed(() => {
-  if (!currentResponses.value.length) return null
-  
-  // Calculate distribution from responses
-  const distribution = {}
-  currentResponses.value.forEach(response => {
-    distribution[response.score] = (distribution[response.score] || 0) + 1
-  })
-  
-  return distribution
-})
-
-const subThemeData = computed(() => {
-  if (!currentQuestion.value) return null
-  return props.data?.qlaData?.subThemes[selectedQuestion.value] || null
-})
-
-const schoolPerformance = computed(() => {
-  if (!selectedQuestion.value) return null
-  return props.data?.qlaData?.schoolPerformance[selectedQuestion.value] || null
-})
-
-const nationalPerformance = computed(() => {
-  if (!selectedQuestion.value) return null
-  return props.data?.qlaData?.nationalPerformance[selectedQuestion.value] || null
-})
-
-// Methods
-function handleQuestionSelect(question) {
-  selectedQuestion.value = question.id
-  // Scroll to analysis section
-  nextTick(() => {
-    const analysisElement = document.querySelector('.question-analysis')
-    if (analysisElement) {
-      analysisElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  })
-}
-
-// Auto-select first question if available
-watch(() => questions.value, (newQuestions) => {
-  if (newQuestions.length > 0 && !selectedQuestion.value) {
-    selectedQuestion.value = newQuestions[0].id
-  }
-}, { immediate: true })
 </script>
 
 <style scoped>
@@ -188,28 +70,8 @@ watch(() => questions.value, (newQuestions) => {
   gap: var(--spacing-lg);
 }
 
-.qla-controls {
-  background: var(--card-bg);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  border: 1px solid var(--border-color);
-}
-
-.form-select {
-  width: 100%;
-  max-width: 600px;
-}
-
-.question-analysis {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-.analysis-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: var(--spacing-lg);
+.qla-insights-section {
+  margin-top: var(--spacing-xl);
 }
 
 .empty-state {

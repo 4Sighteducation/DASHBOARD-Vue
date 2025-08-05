@@ -125,13 +125,8 @@ Working:
 ✅ No more 500 errors for filter endpoints
 
 Not Working:
-❌ No actual VESPA scores displayed (showing 6.0 for all, which is incorrect)
 ❌ No Question Level Analysis data
 ❌ No Comment Insights data
-❌ ERI calculation incorrect (should use outcome questions, not VESPA average)
-❌ Bar chart showing raw JSON instead of visualization
-❌ School switching error: "selectedEstablishment: undefined"
-❌ Latest attempt to query vespa_scores failed due to missing psycopg2 module
 
 Critical Issue
 The app.py attempted to use psycopg2 for raw SQL queries but the module isn't installed on Heroku.
@@ -745,3 +740,134 @@ Frontend:
 - DASHBOARD-Vue/src/stores/dashboard.js (add studentName to filters)
 - DASHBOARD-Vue/vite.config.js (vuedash1z → vuedash2a)
 - dashboard-frontend/src/AppLoaderCopoy.js (CDN update)
+
+Recent Updates (January 2025 - Session 10 - Critical Fixes & Academic Year Filter)
+==================================================================================
+
+33. ERI Speedometer National Line Fix
+--------------------------------------
+Problem: National ERI line not displaying correctly on speedometer gauge
+Multiple Attempts:
+- Tried various angle calculations (270-450°, 180-360°)
+- Attempted different drawing methods (afterDraw, afterDatasetsDraw)
+- Line appeared off the gauge or in wrong position
+
+Final Solution: Removed complex line drawing, replaced with simple text display
+- Added yellow text "National Average: X.X" below ERI title
+- Text updates dynamically when cycle changes
+- Much more reliable and maintainable solution
+
+34. National Averages Update with Cycle Changes
+------------------------------------------------
+Problem: National averages on histograms not updating when switching cycles
+Solution: Added watcher in VespaHistogram to recreate chart when national average changes
+```javascript
+watch(() => props.nationalAverage, (newVal, oldVal) => {
+  if (chartInstance && newVal !== oldVal) {
+    chartInstance.destroy()
+    createChart()
+  }
+})
+```
+
+35. Student Count Fixes
+-----------------------
+Problem: Multiple issues with student counts
+1. Responses showing more than total students (duplicate records)
+2. Counts not updating with cycle changes
+3. Including students with NULL VESPA scores
+
+Solutions:
+Backend (app.py):
+- Added deduplication logic using set to track unique student IDs
+- Filter out students with all NULL VESPA scores
+- Only count students who have at least one non-NULL score
+```python
+# Check if student has at least one non-NULL VESPA score
+has_scores = any([
+    score.get('vision'), score.get('effort'), 
+    score.get('systems'), score.get('practice'),
+    score.get('attitude'), score.get('overall')
+])
+if has_scores:
+    seen_student_ids.add(score['student_id'])
+    all_vespa_scores.append(score)
+```
+
+36. Academic Year Filter Implementation
+---------------------------------------
+Problem: Need to filter data by academic year for historical comparisons
+Solution: Comprehensive academic year filter added to filter bar
+
+Frontend Changes:
+- Added academic year dropdown to FilterBar.vue (first filter)
+- Automatically detects current academic year (Aug-Jul cycle)
+- Fetches available years from backend
+- Persists selection across other filter changes
+
+Backend Support:
+- Existing /api/academic-years endpoint provides available years
+- All statistics queries now accept academicYear parameter
+- Defaults to current year if not specified
+
+Store Changes:
+- Added academicYear to filter state
+- Added getCurrentAcademicYear() helper method
+- Academic year calculation: Aug-Dec = current year, Jan-Jul = previous year
+
+37. Histogram Y-Axis Scaling Improvement
+-----------------------------------------
+Problem: Fixed "+20" scaling made small school charts too compressed
+Solution: Changed to percentage-based scaling
+```javascript
+// Old: return maxCount + 20
+// New: Add 10% padding
+return Math.ceil(maxCount * 1.1)
+```
+Benefits:
+- Small schools (20 students): Y-axis = 22 instead of 40
+- Large schools (300 students): Y-axis = 330 instead of 320
+- Better proportions for all school sizes
+
+38. Backend Performance Optimizations
+-------------------------------------
+Fixed several performance issues:
+1. Deduplication prevents counting same student multiple times per cycle
+2. NULL score filtering reduces data processing
+3. Academic year filtering reduces query scope
+
+Critical SQL Investigation:
+Discovered discrepancy between expected and actual counts
+Example: Bangkok Prep School
+- Expected: Cycle 1: 240, Cycle 2: 220, Cycle 3: 120
+- Was showing: 241 for all cycles (including NULL records)
+
+Files Modified in This Session
+------------------------------
+Frontend:
+- DASHBOARD-Vue/src/components/Overview/ERISpeedometer.vue (removed line drawing)
+- DASHBOARD-Vue/src/components/Overview/SummaryHeader.vue (added national ERI text)
+- DASHBOARD-Vue/src/components/Overview/VespaHistogram.vue (national average watcher)
+- DASHBOARD-Vue/src/components/FilterBar.vue (academic year filter)
+- DASHBOARD-Vue/src/stores/dashboard.js (academic year support)
+- DASHBOARD-Vue/src/components/Overview/OverviewSection.vue (10% Y-axis scaling)
+- DASHBOARD-Vue/vite.config.js (vuedash2a → vuedash2k)
+- dashboard-frontend/src/AppLoaderCopoy.js (CDN update)
+
+Backend:
+- app.py (deduplication, NULL filtering, academic year support)
+
+Current Status After Session 10
+-------------------------------
+✅ National ERI now displays as text (more reliable than line)
+✅ National averages update correctly with cycle changes
+✅ Student counts accurate (no duplicates, no NULL records)
+✅ Academic year filter fully functional
+✅ Histogram scaling improved for all school sizes
+✅ Performance optimizations in place
+
+Outstanding Issues
+------------------
+- QLA and Comment Insights sections still need implementation
+- Export functionality not implemented
+- Some schools may need data verification for historical years

@@ -38,8 +38,9 @@
 
       <!-- Filters Bar -->
       <FilterBar 
-        v-if="activeTab === 'overview'"
+        v-if="activeTab === 'overview' || activeTab === 'qla'"
         :filters="filters"
+        :context="activeTab"
         @filter-change="handleFilterChange"
       />
 

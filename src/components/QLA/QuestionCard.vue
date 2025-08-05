@@ -1,7 +1,6 @@
 <template>
   <div 
     :class="['question-card', scoreClass]"
-    @click="$emit('click', question)"
   >
     <!-- Rank Badge -->
     <div class="question-rank">{{ rank }}</div>
@@ -58,7 +57,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['click'])
+
 
 // Chart reference
 const chartRef = ref(null)
@@ -217,7 +216,7 @@ onMounted(async () => {
   background: var(--secondary-bg);
   border-radius: 12px;
   padding: 1.5rem;
-  cursor: pointer;
+
   transition: all 0.3s ease;
   border: 1px solid var(--border-color);
   position: relative;
@@ -236,15 +235,7 @@ onMounted(async () => {
   transition: width 0.3s ease;
 }
 
-.question-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  border-color: currentColor;
-}
 
-.question-card:hover::before {
-  width: 6px;
-}
 
 /* Rank Badge */
 .question-rank {

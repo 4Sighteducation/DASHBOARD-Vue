@@ -114,6 +114,10 @@ const props = defineProps({
   filters: {
     type: Object,
     required: true
+  },
+  context: {
+    type: String,
+    default: 'overview'
   }
 })
 
