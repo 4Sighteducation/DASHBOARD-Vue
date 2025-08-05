@@ -11,9 +11,9 @@
         <span class="percentage-value">{{ insight.percentageAgreement }}%</span>
         <span class="percentage-label">Agreement</span>
       </div>
+      <p class="insight-question" v-if="insight.question">{{ insight.question }}</p>
       <div class="insight-meta">
-        <span class="response-count">{{ insight.totalResponses }} responses</span>
-        <span class="question-count">{{ insight.questionIds.length }} questions</span>
+        <span class="response-count">n = {{ insight.totalResponses }}</span>
       </div>
     </div>
   </div>
@@ -112,16 +112,32 @@ const colorClass = computed(() => {
   line-height: 1;
 }
 
+.excellent {
+  border-bottom: 4px solid var(--success-color);
+}
+
 .excellent .percentage-value {
   color: var(--success-color);
+}
+
+.good {
+  border-bottom: 4px solid var(--info-color);
 }
 
 .good .percentage-value {
   color: var(--info-color);
 }
 
+.average {
+  border-bottom: 4px solid var(--warning-color);
+}
+
 .average .percentage-value {
   color: var(--warning-color);
+}
+
+.poor {
+  border-bottom: 4px solid var(--danger-color);
 }
 
 .poor .percentage-value {
@@ -133,6 +149,14 @@ const colorClass = computed(() => {
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.insight-question {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: var(--spacing-xs) 0;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .insight-meta {

@@ -20,7 +20,7 @@
           :question="question"
           :rank="index + 1"
           :type="'top'"
-
+          :statistics="question"
         />
       </div>
       
@@ -49,7 +49,7 @@
           :question="question"
           :rank="index + 1"
           :type="'bottom'"
-
+          :statistics="question"
         />
       </div>
       
