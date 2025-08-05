@@ -202,13 +202,13 @@ function createChart() {
       label: 'National Distribution',
       data: scaledNationalData,
       type: 'line',
-      borderColor: '#FFD93D',
-      backgroundColor: '#FFD93D',
-      borderWidth: 2,
-      pointRadius: 5,
-      pointBackgroundColor: '#FFD93D',
-      pointBorderColor: '#0F0F23',
-      pointBorderWidth: 2,
+      borderColor: '#FFD93D80',  // Reduced opacity for less contrast
+      backgroundColor: '#FFD93D60',  // Reduced opacity
+      borderWidth: 1.5,  // Thinner line
+      pointRadius: 4,  // Smaller points
+      pointBackgroundColor: '#FFD93D80',
+      pointBorderColor: '#0F0F2360',  // Less prominent border
+      pointBorderWidth: 1,
       tension: 0.2
     })
   } else {
@@ -340,20 +340,20 @@ function createChart() {
           type: 'line',
           scaleID: 'x',
           value: props.nationalAverage - 1, // Adjust for 0-based index (score 1 is at index 0)
-          borderColor: '#FFD93D',
-          borderWidth: 3,
+          borderColor: '#FFD93D80',  // Reduced opacity
+          borderWidth: 2,  // Thinner line
           borderDash: [5, 5],
           z: 10, // Bring to front
           label: {
             display: true,
             content: `National: ${props.nationalAverage.toFixed(1)}`,
             position: 'end',
-            backgroundColor: 'rgba(255, 217, 61, 0.95)',
+            backgroundColor: 'rgba(255, 217, 61, 0.6)',  // Reduced opacity
             font: {
-              weight: 'bold',
-              size: 11
+              weight: 'normal',  // Not bold
+              size: 10  // Smaller
             },
-            color: '#0F0F23',
+            color: '#0F0F23CC',  // Slightly transparent
             yAdjust: -8,
             xAdjust: 0,
             padding: {

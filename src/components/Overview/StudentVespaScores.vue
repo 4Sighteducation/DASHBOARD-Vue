@@ -3,13 +3,24 @@
     <div class="student-header">
       <h3>Individual VESPA Scores - Cycle {{ cycle }}</h3>
       <p class="student-name">{{ studentName }}</p>
+      <div v-if="hasData" class="completion-status" :class="completionClass">
+        {{ completionStatus }}
+      </div>
     </div>
     
-    <div class="scores-chart-container">
-      <canvas ref="chartCanvas"></canvas>
+    <div v-if="!hasData" class="no-data-message">
+      <div class="no-data-icon">📊</div>
+      <h4>No VESPA data available</h4>
+      <p>This student has not completed the VESPA assessment for Cycle {{ cycle }}.</p>
+      <p class="hint">Try selecting a different cycle or checking back later.</p>
     </div>
     
-    <div class="scores-table">
+    <div v-else>
+      <div class="scores-chart-container">
+        <canvas ref="chartCanvas"></canvas>
+      </div>
+      
+      <div class="scores-table">
       <table>
         <thead>
           <tr>
@@ -28,6 +39,7 @@
           </tr>
         </tbody>
       </table>
+    </div>
     </div>
   </div>
 </template>
@@ -62,12 +74,34 @@ const chartCanvas = ref(null)
 let chartInstance = null
 
 const vespaElements = [
-  { name: 'Vision', key: 'vision', color: '#10B981' },
-  { name: 'Effort', key: 'effort', color: '#3B82F6' },
-  { name: 'Systems', key: 'systems', color: '#8B5CF6' },
-  { name: 'Practice', key: 'practice', color: '#EC4899' },
-  { name: 'Attitude', key: 'attitude', color: '#F59E0B' }
+  { name: 'Vision', key: 'vision', color: '#FF8F00' },  // Orange
+  { name: 'Effort', key: 'effort', color: '#86B4F0' },  // Blue
+  { name: 'Systems', key: 'systems', color: '#72CB44' }, // Green
+  { name: 'Practice', key: 'practice', color: '#7F31A4' }, // Purple
+  { name: 'Attitude', key: 'attitude', color: '#F032E6' }  // Pink
 ]
+
+// Check if student has data
+const hasData = computed(() => {
+  if (!props.vespaScores) return false
+  // Check if at least one VESPA element has a non-zero score
+  return vespaElements.some(elem => props.vespaScores[elem.key] && props.vespaScores[elem.key] > 0)
+})
+
+// Completion status
+const isComplete = computed(() => {
+  if (!props.vespaScores) return false
+  // Check if all VESPA elements have scores
+  return vespaElements.every(elem => props.vespaScores[elem.key] && props.vespaScores[elem.key] > 0)
+})
+
+const completionStatus = computed(() => {
+  return isComplete.value ? 'Assessment Complete' : 'Assessment Incomplete'
+})
+
+const completionClass = computed(() => {
+  return isComplete.value ? 'complete' : 'incomplete'
+})
 
 // Get score for an element
 function getScore(key) {
@@ -98,7 +132,9 @@ function getComparisonClass(key) {
 
 // Lifecycle
 onMounted(() => {
-  createChart()
+  if (hasData.value) {
+    createChart()
+  }
 })
 
 onUnmounted(() => {
@@ -109,8 +145,16 @@ onUnmounted(() => {
 
 // Watch for data changes
 watch(() => props.vespaScores, () => {
-  if (chartInstance) {
-    updateChart()
+  if (hasData.value) {
+    if (chartInstance) {
+      updateChart()
+    } else {
+      createChart()
+    }
+  } else if (chartInstance) {
+    // Destroy chart if no data
+    chartInstance.destroy()
+    chartInstance = null
   }
 }, { deep: true })
 
@@ -138,12 +182,12 @@ function createChart() {
           label: 'National Average',
           data: nationalData,
           type: 'line',
-          borderColor: '#FFD93D',
+          borderColor: '#FFD93D80',  // Reduced opacity
           backgroundColor: 'transparent',
-          borderWidth: 3,
-          pointBackgroundColor: '#FFD93D',
-          pointBorderColor: '#FFD93D',
-          pointRadius: 5,
+          borderWidth: 1.5,  // Thinner line
+          pointBackgroundColor: '#FFD93D80',
+          pointBorderColor: '#FFD93D80',
+          pointRadius: 4,  // Smaller points
           tension: 0.2
         }
       ]
@@ -277,5 +321,54 @@ td {
 
 .comparison.neutral {
   color: var(--text-secondary);
+}
+
+.completion-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.completion-status.complete {
+  background-color: #10B98120;
+  color: #10B981;
+  border: 1px solid #10B98140;
+}
+
+.completion-status.incomplete {
+  background-color: #F5970B20;
+  color: #F59E0B;
+  border: 1px solid #F5970B40;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-secondary);
+}
+
+.no-data-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-data-message h4 {
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+}
+
+.no-data-message p {
+  margin: 0.5rem 0;
+}
+
+.no-data-message .hint {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  font-style: italic;
 }
 </style>

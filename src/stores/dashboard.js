@@ -196,6 +196,10 @@ export const useDashboardStore = defineStore('dashboard', {
       this.errors.data = null
       
       try {
+        // Log the active filters to debug cycle issue
+        console.log('Dashboard Store: Loading data with filters:', this.activeFilters)
+        console.log('Dashboard Store: Current cycle:', this.filters.cycle)
+        
         // Load all data in parallel
         const [statistics, qlaData, wordCloudData, commentInsights] = await Promise.all([
           API.getStatistics(this.selectedEstablishment, this.activeFilters),

@@ -269,12 +269,14 @@ export const API = {
 
   async getStatistics(establishmentId, filters = {}) {
     try {
+      console.log('[API] getStatistics called with filters:', filters)
       const response = await apiClient.get(`${this.getBaseUrl()}/api/statistics`, {
         params: {
           establishment_id: establishmentId,
           ...filters
         }
       })
+      console.log('[API] getStatistics response:', response.data)
       return response.data
     } catch (error) {
       if (import.meta.env.DEV) {
