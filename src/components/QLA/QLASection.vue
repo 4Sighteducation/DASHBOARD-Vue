@@ -36,18 +36,28 @@ const props = defineProps({
   loading: Boolean
 })
 
+// Debug logging
+console.log('[QLASection] Component mounted with data:', props.data)
+console.log('[QLASection] QLA Data:', props.data?.qlaData)
+
 // Top and Bottom Questions
 const topQuestions = computed(() => {
-  return props.data?.qlaData?.highLowQuestions?.topQuestions || []
+  const questions = props.data?.qlaData?.highLowQuestions?.topQuestions || []
+  console.log('[QLASection] Top questions:', questions)
+  return questions
 })
 
 const bottomQuestions = computed(() => {
-  return props.data?.qlaData?.highLowQuestions?.bottomQuestions || []
+  const questions = props.data?.qlaData?.highLowQuestions?.bottomQuestions || []
+  console.log('[QLASection] Bottom questions:', questions)
+  return questions
 })
 
 // Insights
 const insights = computed(() => {
-  return props.data?.qlaData?.insights || []
+  const insightData = props.data?.qlaData?.insights || []
+  console.log('[QLASection] Insights:', insightData)
+  return insightData
 })
 </script>
 

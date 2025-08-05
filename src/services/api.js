@@ -290,6 +290,7 @@ export const API = {
   },
 
   async getQLAData(establishmentId, filters = {}) {
+    console.log('[API] getQLAData called with establishmentId:', establishmentId, 'filters:', filters)
     try {
       const response = await apiClient.get(`${this.getBaseUrl()}/api/qla`, {
         params: {
@@ -297,8 +298,10 @@ export const API = {
           ...filters
         }
       })
+      console.log('[API] getQLAData response:', response.data)
       return response.data
     } catch (error) {
+      console.error('[API] getQLAData error:', error)
       if (import.meta.env.DEV) {
         console.warn('Using mock data for QLA')
         return MOCK_DATA.qlaData
