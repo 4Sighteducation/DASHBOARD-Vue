@@ -1,7 +1,14 @@
 <template>
   <div class="qla-section">
+    <!-- Loading Modal for cycle changes -->
+    <LoadingModal 
+      :is-loading="cycleLoading"
+      title="Loading Data"
+      message="Loading Question Level Analysis for the selected cycle..."
+    />
+    
     <!-- Loading State -->
-    <div v-if="loading" class="section-loading">
+    <div v-if="loading && !cycleLoading" class="section-loading">
       <div class="spinner"></div>
       <p>Loading question analysis...</p>
     </div>
@@ -27,13 +34,40 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useDashboardStore } from '../../stores/dashboard'
 import TopBottomQuestions from './TopBottomQuestions.vue'
 import QuestionnaireInsights from './QuestionnaireInsights.vue'
+import LoadingModal from '../common/LoadingModal.vue'
+
+const store = useDashboardStore()
 
 const props = defineProps({
   data: Object,
   filters: Object,
   loading: Boolean
+})
+
+// Loading state for cycle changes
+const cycleLoading = ref(false)
+const previousCycle = ref(store.filters.cycle)
+
+// Watch for cycle changes
+watch(() => store.filters.cycle, (newCycle, oldCycle) => {
+  if (newCycle !== oldCycle && previousCycle.value !== newCycle) {
+    cycleLoading.value = true
+    previousCycle.value = newCycle
+    // The loading will be turned off when new data arrives
+  }
+})
+
+// Turn off cycle loading when data changes
+watch(() => props.data?.qlaData, (newData) => {
+  if (newData && cycleLoading.value) {
+    // Add small delay to ensure smooth transition
+    setTimeout(() => {
+      cycleLoading.value = false
+    }, 300)
+  }
 })
 
 // Debug logging

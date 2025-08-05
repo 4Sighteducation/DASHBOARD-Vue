@@ -80,6 +80,7 @@ const colorClass = computed(() => {
   overflow: hidden;
   border-bottom-width: 4px;
   height: 100%;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
 }
@@ -120,11 +121,13 @@ const colorClass = computed(() => {
   margin: 0;
   margin-right: 30px; /* Space for rank number */
   flex: 1;
+  min-height: 3.6em; /* Ensure minimum height for 3 lines */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .score-section {
