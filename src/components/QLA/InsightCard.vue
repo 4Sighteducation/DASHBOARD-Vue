@@ -51,6 +51,10 @@ const colorClass = computed(() => {
   position: relative;
   overflow: hidden;
   border-bottom-width: 4px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .insight-card.clickable {
@@ -189,11 +193,15 @@ const colorClass = computed(() => {
 }
 
 .insight-question {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   margin: var(--spacing-xs) 0;
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.3;
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .insight-meta {

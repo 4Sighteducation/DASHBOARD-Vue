@@ -253,9 +253,9 @@ export const API = {
       cycle: cycle || 1
     })
     
-    const url = `${this.baseUrl}/api/student-responses?${params}`
+    const url = `${this.getBaseUrl()}/api/student-responses?${params}`
     const response = await fetch(url, { 
-      headers: this.headers 
+      headers: this.getHeaders()
     })
     
     if (!response.ok) {

@@ -156,35 +156,33 @@ function handleInsightClick(insight) {
 
 .insights-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--spacing-md);
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
 }
 
-/* Force 4 columns on larger screens */
-@media (min-width: 1200px) {
+/* Desktop: 4 columns (default) */
+@media (min-width: 1024px) {
   .insights-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-/* 3 columns on medium-large screens */
-@media (max-width: 1199px) and (min-width: 900px) {
+/* Tablet landscape: 3 columns */
+@media (max-width: 1023px) and (min-width: 768px) {
   .insights-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-/* 2 columns on tablets */
-@media (max-width: 899px) and (min-width: 600px) {
+/* Tablet portrait: 2 columns */
+@media (max-width: 767px) and (min-width: 480px) {
   .insights-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Single column on mobile */
-@media (max-width: 599px) {
+/* Mobile: 1 column */
+@media (max-width: 479px) {
   .insights-grid {
     grid-template-columns: 1fr;
   }
