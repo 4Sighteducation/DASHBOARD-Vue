@@ -2,6 +2,19 @@
   <div class="filter-bar">
     <div class="filter-container">
       <div class="filter-group">
+        <label class="filter-label">Academic Year</label>
+        <select 
+          class="form-select"
+          v-model="selectedAcademicYear"
+          @change="updateFilter('academicYear', $event.target.value)"
+        >
+          <option v-for="year in academicYears" :key="year" :value="year">
+            {{ year }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
         <label class="filter-label">Year Group</label>
         <select 
           class="form-select"
@@ -116,6 +129,8 @@ const searchQuery = ref('')
 const searchResults = ref([])
 const searchLoading = ref(false)
 const showSearchResults = ref(false)
+const academicYears = ref([])
+const selectedAcademicYear = ref(store.filters.academicYear || '')
 
 // Computed
 const hasActiveFilters = computed(() => {
@@ -199,8 +214,35 @@ function clearFilters() {
   store.resetFilters()
 }
 
+// Load academic years
+async function loadAcademicYears() {
+  try {
+    const years = await API.getAcademicYears()
+    academicYears.value = years
+    
+    // Sync with store's academic year
+    if (store.filters.academicYear && years.includes(store.filters.academicYear)) {
+      selectedAcademicYear.value = store.filters.academicYear
+    }
+  } catch (error) {
+    console.error('Failed to load academic years:', error)
+    // Use current year as fallback
+    const currentYear = store.getCurrentAcademicYear()
+    academicYears.value = [currentYear]
+    selectedAcademicYear.value = currentYear
+  }
+}
+
+// Watch for academic year changes from store
+watch(() => store.filters.academicYear, (newYear) => {
+  if (newYear && newYear !== selectedAcademicYear.value) {
+    selectedAcademicYear.value = newYear
+  }
+})
+
 // Load initial data
 onMounted(() => {
+  loadAcademicYears()
   if (store.selectedEstablishment) {
     loadFilterOptions()
   }

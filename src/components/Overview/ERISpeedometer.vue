@@ -78,14 +78,13 @@ watch(() => props.value, () => {
 })
 
 // Watch for national prop changes to redraw the chart with the national line
-watch(() => props.national, (newVal, oldVal) => {
-  console.log('[ERISpeedometer] National value changed:', oldVal, '->', newVal)
-  if (chartInstance && newVal !== null && newVal !== undefined) {
+watch(() => props.national, () => {
+  if (chartInstance && props.national) {
     // Destroy and recreate the chart to show the national line
     chartInstance.destroy()
     createGauge()
   }
-}, { immediate: true })
+})
 
 function createGauge() {
   const ctx = chartCanvas.value?.getContext('2d')
@@ -138,109 +137,84 @@ function createGauge() {
         enabled: false
       }
     },
-    cutout: '70%',
-    // Add onComplete callback to draw national line after chart renders
-    animation: {
-      onComplete: function() {
-        drawNationalLine()
-      }
-    }
+    cutout: '70%'
   }
 
   chartInstance = new Chart(ctx, {
     type: 'doughnut',
     data: data,
-    options: options
+    options: options,
+    plugins: [{
+      afterDatasetsDraw: (chart) => {
+        // Draw national average indicator if provided
+        if (props.national && props.national > 0) {
+          const { ctx, chartArea } = chart
+          
+          // Get proper center from chart area
+          const centerX = (chartArea.left + chartArea.right) / 2
+          const centerY = (chartArea.top + chartArea.bottom) / 2
+          
+          // Get the arc dimensions from the dataset meta
+          const meta = chart.getDatasetMeta(0)
+          if (!meta.data || !meta.data[0]) return
+          
+          const arc = meta.data[0]
+          const innerRadius = arc.innerRadius
+          const outerRadius = arc.outerRadius
+          
+          // Calculate angle for national average
+          // Gauge is 180 degrees, from 180 (left) to 360 (right)
+          const normalizedValue = (props.national - 1) / 4 // 0-1 for 1-5 scale
+          const angleInDegrees = 180 + (normalizedValue * 180) // 180 to 360 degrees
+          const angleInRadians = angleInDegrees * (Math.PI / 180)
+          
+          ctx.save()
+          
+          // Draw shadow line first
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)'
+          ctx.lineWidth = 5
+          ctx.beginPath()
+          ctx.moveTo(centerX + Math.cos(angleInRadians) * (innerRadius - 10), 
+                     centerY + Math.sin(angleInRadians) * (innerRadius - 10))
+          ctx.lineTo(centerX + Math.cos(angleInRadians) * (outerRadius + 10), 
+                     centerY + Math.sin(angleInRadians) * (outerRadius + 10))
+          ctx.stroke()
+          
+          // Draw yellow line on top
+          ctx.strokeStyle = '#FFD93D'
+          ctx.lineWidth = 3
+          ctx.setLineDash([])  // Solid line
+          ctx.beginPath()
+          ctx.moveTo(centerX + Math.cos(angleInRadians) * (innerRadius - 10), 
+                     centerY + Math.sin(angleInRadians) * (innerRadius - 10))
+          ctx.lineTo(centerX + Math.cos(angleInRadians) * (outerRadius + 10), 
+                     centerY + Math.sin(angleInRadians) * (outerRadius + 10))
+          ctx.stroke()
+          
+          // Add text label with background
+          const labelX = centerX + Math.cos(angleInRadians) * (outerRadius + 25)
+          const labelY = centerY + Math.sin(angleInRadians) * (outerRadius + 25)
+          
+          const text = `National: ${props.national.toFixed(1)}`
+          ctx.font = 'bold 11px sans-serif'
+          const textMetrics = ctx.measureText(text)
+          const textWidth = textMetrics.width
+          
+          // Draw background for text
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+          ctx.fillRect(labelX - textWidth/2 - 4, labelY - 8, textWidth + 8, 16)
+          
+          // Draw text
+          ctx.fillStyle = '#FFD93D'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(text, labelX, labelY)
+          
+          ctx.restore()
+        }
+      }
+    }]
   })
-}
-
-function drawNationalLine() {
-  if (!chartInstance || !props.national || props.national <= 0) return
-  
-  console.log('[ERISpeedometer] Drawing national line at:', props.national)
-  
-  const ctx = chartInstance.ctx
-  const chart = chartInstance
-  const centerX = chart.width / 2
-  const centerY = chart.height / 2
-  
-  // Get the actual chart dimensions
-  const meta = chart.getDatasetMeta(0)
-  if (!meta.data || !meta.data[0]) return
-  
-  const arc = meta.data[0]
-  const innerRadius = arc.innerRadius
-  const outerRadius = arc.outerRadius
-  
-  // Calculate angle for national average
-  // The gauge is a semi-circle from left (1) to right (5)
-  // Chart.js doughnut starts at -90 degrees (top) by default
-  // With rotation: 270, it starts at 180 degrees (left side)
-  // We need to map 1-5 scale to 180-360 degrees (left to right)
-  const normalizedValue = (props.national - 1) / 4 // 0-1 for 1-5 scale
-  const angleInDegrees = 180 + (normalizedValue * 180) // 180 to 360 degrees
-  const angleInRadians = angleInDegrees * (Math.PI / 180)
-  
-  // Draw the national line
-  ctx.save()
-  
-  // Draw a line that cuts through both gauges
-  // Start from before the outer gauge and go past the inner gauge
-  const lineStartRadius = outerRadius + 15
-  const lineEndRadius = innerRadius - 15
-  
-  // Draw black shadow line first for better contrast
-  ctx.strokeStyle = '#000000'
-  ctx.lineWidth = 4
-  ctx.globalAlpha = 0.3
-  ctx.beginPath()
-  ctx.moveTo(
-    centerX + Math.cos(angleInRadians) * lineStartRadius,
-    centerY + Math.sin(angleInRadians) * lineStartRadius
-  )
-  ctx.lineTo(
-    centerX + Math.cos(angleInRadians) * lineEndRadius,
-    centerY + Math.sin(angleInRadians) * lineEndRadius
-  )
-  ctx.stroke()
-  
-  // Draw yellow line on top
-  ctx.globalAlpha = 1
-  ctx.strokeStyle = '#FFD93D'
-  ctx.lineWidth = 3
-  ctx.shadowColor = '#000000'
-  ctx.shadowBlur = 6
-  ctx.shadowOffsetX = 0
-  ctx.shadowOffsetY = 0
-  
-  ctx.beginPath()
-  ctx.moveTo(
-    centerX + Math.cos(angleInRadians) * lineStartRadius,
-    centerY + Math.sin(angleInRadians) * lineStartRadius
-  )
-  ctx.lineTo(
-    centerX + Math.cos(angleInRadians) * lineEndRadius,
-    centerY + Math.sin(angleInRadians) * lineEndRadius
-  )
-  ctx.stroke()
-  
-  // Add text label outside the gauge
-  const textX = centerX + Math.cos(angleInRadians) * (outerRadius + 30)
-  const textY = centerY + Math.sin(angleInRadians) * (outerRadius + 30)
-  
-  // Draw text background for readability
-  ctx.shadowBlur = 0
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
-  ctx.fillRect(textX - 45, textY - 10, 90, 20)
-  
-  // Draw text
-  ctx.fillStyle = '#FFD93D'
-  ctx.font = 'bold 11px sans-serif'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(`National: ${props.national}`, textX, textY)
-  
-  ctx.restore()
 }
 
 function updateGauge() {
@@ -251,9 +225,6 @@ function updateGauge() {
   chartInstance.data.datasets[1].backgroundColor[0] = getGaugeColor(props.value)
   chartInstance.data.datasets[1].borderColor[0] = getGaugeColor(props.value)
   chartInstance.update()
-  
-  // Redraw national line after update
-  setTimeout(() => drawNationalLine(), 100)
 }
 </script>
 

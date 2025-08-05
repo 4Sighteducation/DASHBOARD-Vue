@@ -28,8 +28,7 @@ export const useDashboardStore = defineStore('dashboard', {
       faculty: 'all',
       studentId: null,
       studentName: null,
-      cycle: 1,
-      academicYear: null  // Will be set to current year on init
+      cycle: 1
     },
     
     // Filter options are now loaded dynamically in FilterBar component
@@ -122,6 +121,10 @@ export const useDashboardStore = defineStore('dashboard', {
           // For staff admins, get their establishment from Knack
           await this.loadStaffAdminEstablishment()
         }
+        
+        // Set default academic year
+        const currentYear = this.getCurrentAcademicYear()
+        this.filters.academicYear = currentYear
         
         // Filter options are now loaded dynamically in FilterBar component
         
@@ -239,6 +242,19 @@ export const useDashboardStore = defineStore('dashboard', {
         }
       }
     },
+    
+    getCurrentAcademicYear() {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = now.getMonth() + 1 // 1-12
+      
+      // Academic year starts in August
+      if (month >= 8) {
+        return `${year}-${(year + 1).toString().slice(-2)}`
+      } else {
+        return `${year - 1}-${year.toString().slice(-2)}`
+      }
+    },
 
     resetFilters() {
       this.filters = {
@@ -247,8 +263,7 @@ export const useDashboardStore = defineStore('dashboard', {
         faculty: 'all',
         studentId: null,
         studentName: null,
-        cycle: this.filters.cycle || 1,  // Keep the current cycle
-        academicYear: this.filters.academicYear  // Keep the current academic year
+        cycle: this.filters.cycle || 1  // Keep the current cycle
       }
       // Only reload data if an establishment is selected
       if (this.selectedEstablishment) {

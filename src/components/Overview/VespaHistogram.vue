@@ -148,16 +148,6 @@ watch(() => props.distribution, () => {
   }
 }, { deep: true })
 
-// Watch for national average changes to recreate chart with updated annotation
-watch(() => props.nationalAverage, (newVal, oldVal) => {
-  console.log(`[VespaHistogram] National average changed for ${props.title}:`, oldVal, '->', newVal)
-  if (chartInstance && newVal !== oldVal) {
-    // Destroy and recreate to update annotation
-    chartInstance.destroy()
-    createChart()
-  }
-})
-
 // Helper function to calculate appropriate step size based on max value
 function calculateStepSize(maxValue) {
   if (maxValue <= 10) return 1
