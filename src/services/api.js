@@ -246,23 +246,6 @@ export const API = {
     }
   },
 
-  async getStudentResponses(studentId, cycle) {
-    console.log('[API] getStudentResponses called with studentId:', studentId, 'cycle:', cycle)
-    try {
-      const response = await apiClient.get(`${this.getBaseUrl()}/api/student-responses`, {
-        params: {
-          studentId: studentId,
-          cycle: cycle || 1
-        }
-      })
-      console.log('[API] Student responses retrieved:', response.data)
-      return response.data
-    } catch (error) {
-      console.error('Failed to fetch student responses:', error)
-      throw error
-    }
-  },
-
   async searchStudents(establishmentId, searchTerm) {
     try {
       const response = await apiClient.get(`${this.getBaseUrl()}/api/students/search`, {

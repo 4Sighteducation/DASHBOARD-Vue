@@ -46,15 +46,11 @@ const colorClass = computed(() => {
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   transition: all 0.3s ease;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   border-bottom-width: 4px;
-  min-height: 240px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 .insight-card.clickable {
@@ -98,26 +94,23 @@ const colorClass = computed(() => {
 }
 
 .insight-title {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-  line-height: 1.2;
-  min-height: 2.4em;
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .insight-percentage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
 }
 
 .percentage-value {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1;
-  margin-bottom: var(--spacing-xs);
 }
 
 .excellent {
@@ -196,14 +189,11 @@ const colorClass = computed(() => {
 }
 
 .insight-question {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  margin: var(--spacing-sm) 0;
+  margin: var(--spacing-xs) 0;
   text-align: center;
   line-height: 1.4;
-  min-height: 3em;
-  display: block;
-  word-wrap: break-word;
 }
 
 .insight-meta {
