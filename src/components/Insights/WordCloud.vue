@@ -59,23 +59,42 @@ const generateWordCloud = async () => {
   // Transform data to WordCloud2 format [text, size]
   const words = props.data.wordCloudData.map(item => [item.text, item.size])
   
-  console.log('Rendering word cloud with', words.length, 'words')
+  console.log('[WordCloud Component] Rendering word cloud with', words.length, 'words')
+  console.log('[WordCloud Component] First 5 words:', words.slice(0, 5))
+  console.log('[WordCloud Component] Canvas dimensions:', canvas.width, 'x', canvas.height)
   
   try {
     // Clear previous content
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     
-    // Check if WordCloud is available (it should be after import)
-    if (typeof window.WordCloud === 'undefined') {
-      console.error('WordCloud2 not available after import, using fallback')
+    // Check if WordCloud is available on window
+    const WordCloudFunc = window.WordCloud
+    
+    if (!WordCloudFunc) {
+      console.error('[WordCloud Component] WordCloud2 not available in generateWordCloud, using fallback')
+      
+      // Debug what's actually available on window
+      console.log('[WordCloud Debug] Checking window properties:')
+      console.log('  window.WordCloud:', window.WordCloud)
+      console.log('  window.wordcloud:', window.wordcloud)
+      console.log('  window.WordCloud2:', window.WordCloud2)
+      console.log('  window.wordCloud:', window.wordCloud)
+      
+      // Check if the script tag exists
+      const scripts = Array.from(document.getElementsByTagName('script'))
+      const wcScript = scripts.find(s => s.src && s.src.includes('wordcloud'))
+      console.log('[WordCloud Debug] WordCloud script tag:', wcScript ? wcScript.src : 'NOT FOUND')
+      
       renderSimpleFallback()
       isLoading.value = false
       return
     }
     
+    console.log('[WordCloud Component] Calling WordCloud2 with config...')
+    
     // Use WordCloud2 with configuration matching the prototype exactly
-    window.WordCloud(canvas, {
+    WordCloudFunc(canvas, {
       list: words,
       // Grid size affects spacing between words
       gridSize: Math.round(16 * containerWidth / 1024),
@@ -124,9 +143,23 @@ const generateWordCloud = async () => {
       }
     })
     
-    console.log('WordCloud2 rendered successfully')
+    console.log('[WordCloud Component] window.WordCloud called successfully!')
+    
+    // Add a callback to verify it's actually rendering
+    setTimeout(() => {
+      const ctx = canvas.getContext('2d')
+      const imageData = ctx.getImageData(0, 0, 10, 10)
+      const hasContent = imageData.data.some(pixel => pixel !== 0)
+      console.log('[WordCloud Component] Canvas has content after WordCloud2:', hasContent)
+      
+      if (!hasContent) {
+        console.warn('[WordCloud Component] WordCloud2 might not have rendered anything!')
+      }
+    }, 1000)
+    
   } catch (error) {
-    console.error('WordCloud2 rendering error:', error)
+    console.error('[WordCloud Component] WordCloud2 rendering error:', error)
+    console.error('[WordCloud Component] Error stack:', error.stack)
     // If WordCloud2 fails, use simple fallback
     renderSimpleFallback()
   }
@@ -158,6 +191,9 @@ const handleResize = () => {
 }
 
 onMounted(async () => {
+  console.log('[WordCloud Component] Mounted, checking for data...')
+  console.log('[WordCloud Component] Props data:', props.data)
+  
   await nextTick()
   
   // Wait for WordCloud2 to be available (with multiple retries)
@@ -166,23 +202,31 @@ onMounted(async () => {
   const checkInterval = 200 // Check every 200ms
   
   const checkAndGenerate = () => {
-    if (typeof window.WordCloud !== 'undefined') {
-      console.log('WordCloud2 found! Generating word cloud...')
+    console.log(`[WordCloud Component] Checking for WordCloud2, attempt ${retries + 1}`)
+    console.log('[WordCloud Component] window.WordCloud type:', typeof window.WordCloud)
+    
+    // Check if WordCloud is available (it should be on window after CDN loads)
+    const hasWordCloud = (typeof window.WordCloud !== 'undefined')
+    
+    if (hasWordCloud) {
+      console.log('[WordCloud Component] WordCloud2 found! Generating word cloud...')
       isLoading.value = true
       generateWordCloud()
     } else if (retries < maxRetries) {
       retries++
-      console.log(`WordCloud2 not ready, retry ${retries}/${maxRetries}...`)
+      console.log(`[WordCloud Component] WordCloud2 not ready, retry ${retries}/${maxRetries}...`)
       setTimeout(checkAndGenerate, checkInterval)
     } else {
-      console.error('WordCloud2 not available after all retries, using fallback')
+      console.error('[WordCloud Component] WordCloud2 not available after all retries, using fallback')
       isLoading.value = true
       generateWordCloud() // Will use fallback
     }
   }
   
-  // Start checking
-  checkAndGenerate()
+  // Start checking after a small delay to ensure everything is loaded
+  setTimeout(() => {
+    checkAndGenerate()
+  }, 500)
   
   // Add resize listener
   window.addEventListener('resize', handleResize)
