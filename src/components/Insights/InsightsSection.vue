@@ -29,7 +29,7 @@
             <div class="empty-icon">🔍</div>
             <p>{{ wordCloudData?.message || 'No comment data available for the selected filters.' }}</p>
           </div>
-          <WordCloudCanvas v-else :data="wordCloudData" />
+          <WordCloud v-else :data="wordCloudData" />
         </div>
       </div>
 
@@ -112,7 +112,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import WordCloudCanvas from './WordCloudCanvas.vue'
+import WordCloud from './WordCloud.vue'
 
 const props = defineProps({
   data: Object,

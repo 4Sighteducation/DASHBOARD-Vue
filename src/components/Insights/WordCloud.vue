@@ -193,10 +193,27 @@ const handleResize = () => {
 onMounted(async () => {
   console.log('[WordCloud Component] Mounted, checking for data...')
   console.log('[WordCloud Component] Props data:', props.data)
+  console.log('[WordCloud Component] Canvas ref:', wordCloudCanvas.value)
+  
+  // Check if we have data to render
+  if (!props.data || !props.data.wordCloudData || props.data.wordCloudData.length === 0) {
+    console.warn('[WordCloud Component] No data available to render')
+    return
+  }
   
   await nextTick()
   
-  // Wait for WordCloud2 to be available (with multiple retries)
+  // Immediately check if WordCloud2 is available
+  console.log('[WordCloud Component] Immediate check - window.WordCloud:', typeof window.WordCloud)
+  
+  if (typeof window.WordCloud !== 'undefined') {
+    console.log('[WordCloud Component] WordCloud2 already available! Generating immediately...')
+    isLoading.value = true
+    generateWordCloud()
+    return
+  }
+  
+  // If not immediately available, wait with retries
   let retries = 0
   const maxRetries = 10
   const checkInterval = 200 // Check every 200ms
@@ -240,14 +257,26 @@ onUnmounted(() => {
 })
 
 watch(() => props.data, async (newData) => {
-  if (newData) {
+  console.log('[WordCloud Component] Watch triggered - data changed:', newData)
+  if (newData && newData.wordCloudData && newData.wordCloudData.length > 0) {
+    console.log('[WordCloud Component] Valid data received in watch, generating word cloud...')
     await nextTick()
     isLoading.value = true
-    setTimeout(() => {
+    
+    // Check if WordCloud2 is available
+    if (typeof window.WordCloud !== 'undefined') {
+      console.log('[WordCloud Component] WordCloud2 available in watch, generating...')
       generateWordCloud()
-    }, 100)
+    } else {
+      console.log('[WordCloud Component] WordCloud2 not yet available in watch, waiting...')
+      setTimeout(() => {
+        generateWordCloud()
+      }, 1000)
+    }
+  } else {
+    console.log('[WordCloud Component] No valid data in watch')
   }
-}, { deep: true })
+}, { deep: true, immediate: true })
 </script>
 
 <style scoped>
