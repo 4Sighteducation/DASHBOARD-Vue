@@ -1,7 +1,10 @@
 <template>
   <div class="wordcloud-container">
     <canvas ref="wordCloudCanvas" id="wordCloudCanvas"></canvas>
-    <div v-if="stats" class="word-cloud-stats">
+    <div v-if="!isLoading && (!data || !data.wordCloudData || data.wordCloudData.length === 0)" class="no-data-message">
+      <p>{{ data?.message || 'No comment data available for word cloud.' }}</p>
+    </div>
+    <div v-if="stats && stats.totalComments > 0" class="word-cloud-stats">
       <span>Total Comments: {{ stats.totalComments }}</span>
       <span>Unique Words: {{ stats.uniqueWords }}</span>
       <span v-if="stats.topWord">Most Common: "{{ stats.topWord[0] }}" ({{ stats.topWord[1] }} times)</span>
@@ -17,12 +20,14 @@ const props = defineProps({
 })
 
 const wordCloudCanvas = ref(null)
-
 const stats = ref(null)
+const isLoading = ref(true)
+const libraryLoaded = ref(false)
 
 function generateWordCloud() {
   if (!props.data || !props.data.wordCloudData || !wordCloudCanvas.value) {
     console.warn('WordCloud dependencies not ready')
+    isLoading.value = false
     return
   }
   
@@ -33,39 +38,34 @@ function generateWordCloud() {
     topWord: props.data.topWord || null
   }
   
-  // Check if WordCloud2 library is available
-  if (!window.WordCloud) {
-    console.warn('WordCloud2 library not loaded, loading now...')
-    loadWordCloud2Library().then(() => {
-      renderWordCloud()
-    })
+  // If no data, show message
+  if (props.data.wordCloudData.length === 0) {
+    isLoading.value = false
     return
   }
   
-  renderWordCloud()
+  // Always use fallback rendering for now to ensure it works
+  renderFallback()
+  isLoading.value = false
 }
 
-function renderWordCloud() {
-  if (!window.WordCloud || !wordCloudCanvas.value || !props.data?.wordCloudData) {
-    return
-  }
-  
+function renderFallback() {
   const canvas = wordCloudCanvas.value
+  if (!canvas) return
+  
+  const ctx = canvas.getContext('2d')
   const container = canvas.parentElement
   
-  // Set canvas dimensions based on container
+  // Set canvas dimensions
   const containerWidth = container.offsetWidth || 800
   const containerHeight = 400
   canvas.width = containerWidth
   canvas.height = containerHeight
   
-  // Convert data to WordCloud2 format
-  const words = props.data.wordCloudData.map(item => [item.text, item.size])
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   
-  if (words.length === 0) {
-    // Clear canvas and show message
-    const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  if (!props.data?.wordCloudData || props.data.wordCloudData.length === 0) {
     ctx.font = '20px Inter, sans-serif'
     ctx.fillStyle = '#999'
     ctx.textAlign = 'center'
@@ -73,93 +73,72 @@ function renderWordCloud() {
     return
   }
   
-  try {
-    // Configure word cloud with original colors
-    WordCloud(canvas, {
-      list: words,
-      gridSize: Math.round(16 * containerWidth / 1024),
-      weightFactor: function(size) {
-        return Math.pow(size, 1.3) * containerWidth / 1024
-      },
-      fontFamily: 'Inter, sans-serif',
-      color: function(word, weight) {
-        // Use the exact colors from the original implementation
-        const colors = ['#ff8f00', '#86b4f0', '#72cb44', '#7f31a4', '#f032e6', '#ffd93d']
-        return colors[Math.floor(Math.random() * colors.length)]
-      },
-      rotateRatio: 0.5,
-      rotationSteps: 2,
-      backgroundColor: 'transparent',
-      minSize: 12,
-      drawOutOfBound: false,
-      shrinkToFit: true,
-      hover: function(item) {
-        // Optional: Add hover effect
-        if (item) {
-          canvas.style.cursor = 'pointer'
-          canvas.title = item[0] + ': ' + item[1] + ' occurrences'
-        } else {
-          canvas.style.cursor = 'default'
-          canvas.title = ''
-        }
-      }
-    })
-  } catch (error) {
-    console.error('WordCloud2 rendering error:', error)
-    // Fallback to simple display
-    renderFallback()
-  }
-}
-
-function renderFallback() {
-  const canvas = wordCloudCanvas.value
-  const ctx = canvas.getContext('2d')
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  // Create a more visually appealing fallback word cloud
+  const words = props.data.wordCloudData.slice(0, 30) // Take top 30 words
+  const colors = ['#ff8f00', '#86b4f0', '#72cb44', '#7f31a4', '#f032e6', '#ffd93d']
   
-  // Display top words as text
-  if (props.data?.wordCloudData) {
-    const topWords = props.data.wordCloudData.slice(0, 10)
-    ctx.font = '16px Inter, sans-serif'
-    ctx.fillStyle = '#666'
+  // Calculate positions in a cloud-like pattern
+  const centerX = canvas.width / 2
+  const centerY = canvas.height / 2
+  const positions = []
+  
+  // Generate spiral positions
+  let angle = 0
+  let radius = 0
+  
+  words.forEach((word, index) => {
+    // Calculate position in spiral
+    angle += 0.5
+    radius = 10 + (index * 8)
     
-    let y = 30
-    topWords.forEach((word, index) => {
-      const size = 20 - index
-      ctx.font = `${size}px Inter, sans-serif`
-      ctx.fillStyle = ['#ff8f00', '#86b4f0', '#72cb44'][index % 3]
-      ctx.fillText(word.text, 20, y)
-      y += size + 10
-    })
-  }
-}
-
-function loadWordCloud2Library() {
-  return new Promise((resolve, reject) => {
-    if (window.WordCloud) {
-      resolve()
-      return
+    const x = centerX + Math.cos(angle) * radius
+    const y = centerY + Math.sin(angle) * radius
+    
+    // Check for overlaps (simplified)
+    let finalX = x
+    let finalY = y
+    let attempts = 0
+    
+    while (attempts < 10 && positions.some(pos => 
+      Math.abs(pos.x - finalX) < 60 && Math.abs(pos.y - finalY) < 30
+    )) {
+      angle += 0.3
+      radius += 5
+      finalX = centerX + Math.cos(angle) * radius
+      finalY = centerY + Math.sin(angle) * radius
+      attempts++
     }
     
-    const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/gh/timdream/wordcloud2.js@1.2.2/src/wordcloud2.js'
-    script.onload = resolve
-    script.onerror = reject
-    document.head.appendChild(script)
+    positions.push({ x: finalX, y: finalY, word: word.text, size: word.size })
+  })
+  
+  // Draw words
+  positions.forEach((pos, index) => {
+    const fontSize = Math.max(12, Math.min(48, pos.size))
+    ctx.font = `${fontSize}px Inter, sans-serif`
+    ctx.fillStyle = colors[index % colors.length]
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    
+    // Add slight rotation for variety
+    ctx.save()
+    ctx.translate(pos.x, pos.y)
+    const rotation = (Math.random() - 0.5) * 0.3
+    ctx.rotate(rotation)
+    ctx.fillText(pos.word, 0, 0)
+    ctx.restore()
   })
 }
 
 onMounted(async () => {
-  // Load WordCloud2 library if not already loaded
-  if (!window.WordCloud) {
-    await loadWordCloud2Library()
-  }
-  // Wait for next tick to ensure canvas is ready
   await nextTick()
+  isLoading.value = true
   generateWordCloud()
 })
 
 watch(() => props.data, async () => {
   await nextTick()
+  isLoading.value = true
   generateWordCloud()
 }, { deep: true })
 
@@ -195,6 +174,17 @@ onMounted(() => {
 #wordCloudCanvas {
   width: 100%;
   height: 400px;
+}
+
+.no-data-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+  padding: 2rem;
 }
 
 .word-cloud-stats {
