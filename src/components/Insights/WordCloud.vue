@@ -50,27 +50,14 @@ const generateWordCloud = async () => {
   const canvas = wordCloudCanvas.value
   const container = canvas.parentElement
   
-  // Get device pixel ratio for sharp rendering on high DPI displays
-  const dpr = window.devicePixelRatio || 1
-  
-  // Set canvas dimensions - use larger size for better quality
+  // Set canvas dimensions to match prototype
   const containerWidth = container.offsetWidth || 800
-  const containerHeight = 450 // Slightly taller for better word distribution
-  
-  // Set canvas size for high DPI displays
-  canvas.width = containerWidth * dpr
-  canvas.height = containerHeight * dpr
-  
-  // Scale canvas back down using CSS for proper display size
-  canvas.style.width = containerWidth + 'px'
-  canvas.style.height = containerHeight + 'px'
+  const containerHeight = 400
+  canvas.width = containerWidth
+  canvas.height = containerHeight
   
   // Transform data to WordCloud2 format [text, size]
-  // Limit to top 60 words to prevent overcrowding
-  const words = props.data.wordCloudData.slice(0, 60).map(item => [item.text, item.size])
-  
-  // Log to check if sizes are correct
-  console.log('[WordCloud Component] Top 10 words with sizes:', words.slice(0, 10))
+  const words = props.data.wordCloudData.map(item => [item.text, item.size])
   
   console.log('[WordCloud Component] Rendering word cloud with', words.length, 'words')
   console.log('[WordCloud Component] First 5 words:', words.slice(0, 5))
@@ -105,22 +92,15 @@ const generateWordCloud = async () => {
     }
     
     console.log('[WordCloud Component] Calling WordCloud2 with config...')
-    console.log('[WordCloud Component] DPR:', dpr, 'Canvas actual size:', canvas.width, 'x', canvas.height)
     
-    // Use WordCloud2 with configuration adjusted for DPR
+    // Use WordCloud2 with configuration matching the prototype exactly
     WordCloudFunc(canvas, {
       list: words,
-      // Grid size affects spacing between words - smaller = tighter packing
-      gridSize: Math.round(12), // Standard grid size
+      // Grid size affects spacing between words
+      gridSize: Math.round(16 * containerWidth / 1024),
       // Weight factor determines how size values are transformed
       weightFactor: function(size) {
-        // The size value is the actual count/frequency
-        // Scale it to appropriate font size
-        const baseSize = Math.sqrt(size) * 8 // Square root for better distribution
-        const scaleFactor = containerWidth / 1000 // Scale based on container width
-        
-        // Return the calculated font size
-        return baseSize * scaleFactor
+        return Math.pow(size, 1.5) * containerWidth / 1024
       },
       // Font family matching prototype
       fontFamily: 'Inter, sans-serif',
@@ -141,16 +121,12 @@ const generateWordCloud = async () => {
       rotationSteps: 2, // Only horizontal and vertical
       // Background transparent like prototype
       backgroundColor: 'transparent',
-      // Minimum font size (adjusted for DPR)
-      minSize: Math.round(10 * dpr),
+      // Minimum font size
+      minSize: 12,
       // Don't draw words outside canvas bounds
       drawOutOfBound: false,
-      // Don't shrink - we control size with weightFactor
-      shrinkToFit: false,
-      // Set origin to center of canvas
-      origin: [canvas.width / 2, canvas.height / 2],
-      // Clear canvas before drawing
-      clearCanvas: true,
+      // Shrink words to fit if needed
+      shrinkToFit: true,
       // Optional: Add hover effects
       hover: function(item) {
         if (item) {
@@ -217,27 +193,10 @@ const handleResize = () => {
 onMounted(async () => {
   console.log('[WordCloud Component] Mounted, checking for data...')
   console.log('[WordCloud Component] Props data:', props.data)
-  console.log('[WordCloud Component] Canvas ref:', wordCloudCanvas.value)
-  
-  // Check if we have data to render
-  if (!props.data || !props.data.wordCloudData || props.data.wordCloudData.length === 0) {
-    console.warn('[WordCloud Component] No data available to render')
-    return
-  }
   
   await nextTick()
   
-  // Immediately check if WordCloud2 is available
-  console.log('[WordCloud Component] Immediate check - window.WordCloud:', typeof window.WordCloud)
-  
-  if (typeof window.WordCloud !== 'undefined') {
-    console.log('[WordCloud Component] WordCloud2 already available! Generating immediately...')
-    isLoading.value = true
-    generateWordCloud()
-    return
-  }
-  
-  // If not immediately available, wait with retries
+  // Wait for WordCloud2 to be available (with multiple retries)
   let retries = 0
   const maxRetries = 10
   const checkInterval = 200 // Check every 200ms
@@ -281,26 +240,14 @@ onUnmounted(() => {
 })
 
 watch(() => props.data, async (newData) => {
-  console.log('[WordCloud Component] Watch triggered - data changed:', newData)
-  if (newData && newData.wordCloudData && newData.wordCloudData.length > 0) {
-    console.log('[WordCloud Component] Valid data received in watch, generating word cloud...')
+  if (newData) {
     await nextTick()
     isLoading.value = true
-    
-    // Check if WordCloud2 is available
-    if (typeof window.WordCloud !== 'undefined') {
-      console.log('[WordCloud Component] WordCloud2 available in watch, generating...')
+    setTimeout(() => {
       generateWordCloud()
-    } else {
-      console.log('[WordCloud Component] WordCloud2 not yet available in watch, waiting...')
-      setTimeout(() => {
-        generateWordCloud()
-      }, 1000)
-    }
-  } else {
-    console.log('[WordCloud Component] No valid data in watch')
+    }, 100)
   }
-}, { deep: true, immediate: true })
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -308,7 +255,7 @@ watch(() => props.data, async (newData) => {
 .wordcloud-container {
   position: relative;
   width: 100%;
-  min-height: 500px; /* Increased to accommodate taller canvas */
+  min-height: 400px;
   background: var(--secondary-bg, #1a1a2e);
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
   border-radius: var(--radius-lg, 1.5rem);
@@ -317,15 +264,12 @@ watch(() => props.data, async (newData) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* Prevent any overflow */
 }
 
 /* Canvas styling matching prototype */
 #wordCloudCanvas {
   width: 100%;
-  max-width: 100%;
-  height: auto; /* Let height be set by JS */
-  display: block;
+  height: 350px;
   cursor: pointer;
 }
 

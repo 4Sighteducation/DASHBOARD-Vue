@@ -327,7 +327,7 @@ onMounted(() => {
   background-color: white;
   border: 2px solid var(--border-color);
   border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  color: #2c3e50; /* Dark text for white background */
   font-size: 0.9375rem;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -361,6 +361,18 @@ onMounted(() => {
 .form-select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Ensure option text is also dark */
+.form-select option {
+  color: #2c3e50;
+  background-color: white;
+}
+
+/* Placeholder text color */
+.form-input::placeholder {
+  color: #94a3b8;
+  opacity: 1;
 }
 
 .search-wrapper {
