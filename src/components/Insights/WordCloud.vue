@@ -15,8 +15,8 @@
 <script setup>
 import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue'
 
-// Import wordcloud and it will auto-attach to window
-import 'wordcloud'
+// WordCloud2 should be loaded by CDN via AppLoader
+// We'll check for window.WordCloud when we need it
 
 const props = defineProps({
   data: Object // Expecting { wordCloudData, totalComments, uniqueWords, topWord }

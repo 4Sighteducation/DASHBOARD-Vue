@@ -6,6 +6,14 @@ import App from './App.vue'
 window.initializeVueDashboard = function() {
   console.log('Vue Dashboard: Initializing...')
   
+  // Check if WordCloud2 is available (should be loaded by AppLoader)
+  if (typeof window.WordCloud === 'undefined') {
+    console.warn('WordCloud2 not available - word clouds will use fallback rendering')
+    console.warn('AppLoader should have loaded: https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js')
+  } else {
+    console.log('WordCloud2 is available and ready!')
+  }
+  
   // Get config from AppLoader
   const config = window.DASHBOARD_CONFIG
   if (!config) {
