@@ -50,14 +50,27 @@ const generateWordCloud = async () => {
   const canvas = wordCloudCanvas.value
   const container = canvas.parentElement
   
-  // Set canvas dimensions to match prototype
+  // Get device pixel ratio for sharp rendering on high DPI displays
+  const dpr = window.devicePixelRatio || 1
+  
+  // Set canvas dimensions - use larger size for better quality
   const containerWidth = container.offsetWidth || 800
-  const containerHeight = 400
-  canvas.width = containerWidth
-  canvas.height = containerHeight
+  const containerHeight = 450 // Slightly taller for better word distribution
+  
+  // Set canvas size for high DPI displays
+  canvas.width = containerWidth * dpr
+  canvas.height = containerHeight * dpr
+  
+  // Scale canvas back down using CSS for proper display size
+  canvas.style.width = containerWidth + 'px'
+  canvas.style.height = containerHeight + 'px'
   
   // Transform data to WordCloud2 format [text, size]
-  const words = props.data.wordCloudData.map(item => [item.text, item.size])
+  // Limit to top 60 words to prevent overcrowding
+  const words = props.data.wordCloudData.slice(0, 60).map(item => [item.text, item.size])
+  
+  // Log to check if sizes are correct
+  console.log('[WordCloud Component] Top 10 words with sizes:', words.slice(0, 10))
   
   console.log('[WordCloud Component] Rendering word cloud with', words.length, 'words')
   console.log('[WordCloud Component] First 5 words:', words.slice(0, 5))
@@ -92,15 +105,22 @@ const generateWordCloud = async () => {
     }
     
     console.log('[WordCloud Component] Calling WordCloud2 with config...')
+    console.log('[WordCloud Component] DPR:', dpr, 'Canvas actual size:', canvas.width, 'x', canvas.height)
     
-    // Use WordCloud2 with configuration matching the prototype exactly
+    // Use WordCloud2 with configuration adjusted for DPR
     WordCloudFunc(canvas, {
       list: words,
-      // Grid size affects spacing between words
-      gridSize: Math.round(16 * containerWidth / 1024),
+      // Grid size affects spacing between words - smaller = tighter packing
+      gridSize: Math.round(12), // Standard grid size
       // Weight factor determines how size values are transformed
       weightFactor: function(size) {
-        return Math.pow(size, 1.5) * containerWidth / 1024
+        // The size value is the actual count/frequency
+        // Scale it to appropriate font size
+        const baseSize = Math.sqrt(size) * 8 // Square root for better distribution
+        const scaleFactor = containerWidth / 1000 // Scale based on container width
+        
+        // Return the calculated font size
+        return baseSize * scaleFactor
       },
       // Font family matching prototype
       fontFamily: 'Inter, sans-serif',
@@ -121,12 +141,16 @@ const generateWordCloud = async () => {
       rotationSteps: 2, // Only horizontal and vertical
       // Background transparent like prototype
       backgroundColor: 'transparent',
-      // Minimum font size
-      minSize: 12,
+      // Minimum font size (adjusted for DPR)
+      minSize: Math.round(10 * dpr),
       // Don't draw words outside canvas bounds
       drawOutOfBound: false,
-      // Shrink words to fit if needed
-      shrinkToFit: true,
+      // Don't shrink - we control size with weightFactor
+      shrinkToFit: false,
+      // Set origin to center of canvas
+      origin: [canvas.width / 2, canvas.height / 2],
+      // Clear canvas before drawing
+      clearCanvas: true,
       // Optional: Add hover effects
       hover: function(item) {
         if (item) {
@@ -284,7 +308,7 @@ watch(() => props.data, async (newData) => {
 .wordcloud-container {
   position: relative;
   width: 100%;
-  min-height: 400px;
+  min-height: 500px; /* Increased to accommodate taller canvas */
   background: var(--secondary-bg, #1a1a2e);
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
   border-radius: var(--radius-lg, 1.5rem);
@@ -293,12 +317,15 @@ watch(() => props.data, async (newData) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden; /* Prevent any overflow */
 }
 
 /* Canvas styling matching prototype */
 #wordCloudCanvas {
   width: 100%;
-  height: 350px;
+  max-width: 100%;
+  height: auto; /* Let height be set by JS */
+  display: block;
   cursor: pointer;
 }
 

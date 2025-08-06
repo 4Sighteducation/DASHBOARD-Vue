@@ -28,6 +28,20 @@
         </select>
       </div>
 
+      <!-- Cycle Filter - Only show for Student Comment Insights -->
+      <div v-if="showCycleFilter" class="filter-group">
+        <label class="filter-label">Cycle</label>
+        <select 
+          class="form-select"
+          :value="filters.cycle || 1"
+          @change="updateFilter('cycle', parseInt($event.target.value))"
+        >
+          <option :value="1">Cycle 1</option>
+          <option :value="2">Cycle 2</option>
+          <option :value="3">Cycle 3</option>
+        </select>
+      </div>
+
       <div class="filter-group">
         <label class="filter-label">Group</label>
         <select 
@@ -144,6 +158,11 @@ const hasActiveFilters = computed(() => {
          props.filters.studentId !== null
 })
 
+// Show cycle filter only for Student Comment Insights
+const showCycleFilter = computed(() => {
+  return props.context === 'insights'
+})
+
 // Load filter options when establishment changes
 watch(() => store.selectedEstablishment, async (newVal) => {
   if (newVal) {
@@ -255,16 +274,29 @@ onMounted(() => {
 
 <style scoped>
 .filter-bar {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(44, 62, 80, 0.05) 0%, rgba(52, 73, 94, 0.05) 100%);
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  padding: var(--spacing-lg);
   margin: var(--spacing-lg) 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ff8f00 0%, #86b4f0 33%, #72cb44 66%, #7f31a4 100%);
 }
 
 .filter-container {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
   align-items: flex-end;
   flex-wrap: wrap;
 }
@@ -280,39 +312,50 @@ onMounted(() => {
 
 .filter-label {
   display: block;
-  margin-bottom: var(--spacing-xs);
-  font-size: 0.875rem;
-  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .form-select,
 .form-input {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  background-color: var(--secondary-bg);
-  border: 1px solid var(--border-color);
+  padding: 0.625rem 0.875rem;
+  background-color: white;
+  border: 2px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
   transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .form-select {
   padding-right: 2.5rem;
   cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%234a5568' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 12px;
+  appearance: none;
 }
 
 .form-select:hover,
 .form-input:hover {
-  border-color: var(--accent-primary);
+  border-color: #4A90E2;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(74, 144, 226, 0.15);
 }
 
 .form-select:focus,
 .form-input:focus {
   outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1), 0 3px 8px rgba(74, 144, 226, 0.15);
 }
 
 .form-select:disabled {

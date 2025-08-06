@@ -142,6 +142,12 @@ async function initialize() {
 }
 
 async function loadDashboardData() {
+  // Don't load if no establishment is selected
+  if (!store.selectedEstablishment) {
+    console.warn('No establishment selected, skipping data load')
+    return
+  }
+  
   try {
     sectionLoading.value = true
     await store.loadDashboardData()
@@ -153,9 +159,9 @@ async function loadDashboardData() {
   }
 }
 
-function handleEstablishmentChange(establishmentId) {
-  store.selectEstablishment(establishmentId)
-  loadDashboardData()
+function handleEstablishmentChange() {
+  // When super user clicks "Change School", open the selector modal
+  showSuperUserModal.value = true
 }
 
 function handleEstablishmentSelect(establishment) {
@@ -241,36 +247,62 @@ onMounted(() => {
   background: #357ABD;
 }
 
-/* Tab Navigation */
+/* Tab Navigation - Enhanced for better visibility */
 .dashboard-tabs {
   display: flex;
-  background: white;
-  border-bottom: 2px solid #e0e0e0;
-  padding: 0;
-  margin: 0 -20px;
-  padding: 0 20px;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: 0.5rem;
+  margin: 0 0 var(--spacing-md) 0;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .tab-button {
   flex: 1;
   padding: 1rem 1.5rem;
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 16px;
-  font-weight: 500;
-  color: #666;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tab-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  transition: background 0.3s ease;
 }
 
 .tab-button:hover {
-  color: #4A90E2;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .tab-button.active {
-  color: #4A90E2;
-  border-bottom-color: #4A90E2;
+  background: white;
+  color: #2c3e50;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button.active::before {
+  background: linear-gradient(90deg, #ff8f00 0%, #86b4f0 50%, #72cb44 100%);
+  height: 4px;
 }
 
 /* Tab Content */
