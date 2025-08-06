@@ -331,17 +331,41 @@ export const API = {
 
   async getWordCloudData(establishmentId, filters = {}) {
     try {
-      const response = await apiClient.get(`${this.getBaseUrl()}/api/word-cloud`, {
-        params: {
-          establishment_id: establishmentId,
-          ...filters
-        }
+      // Build params with proper filter names
+      const params = {
+        establishment_id: establishmentId
+      }
+      
+      // Add filters if present
+      if (filters.cycle) params.cycle = filters.cycle
+      if (filters.academicYear) params.academic_year = filters.academicYear
+      if (filters.yearGroup) params.year_group = filters.yearGroup
+      if (filters.group) params.group = filters.group
+      if (filters.faculty) params.faculty = filters.faculty
+      if (filters.studentId) params.student_id = filters.studentId
+      
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/comments/word-cloud`, {
+        params
       })
       return response.data
     } catch (error) {
+      console.error('Error fetching word cloud data:', error)
       if (import.meta.env.DEV) {
         console.warn('Using mock data for word cloud')
-        return MOCK_DATA.wordCloudData
+        return {
+          wordCloudData: [
+            { text: 'revision', size: 45, count: 234 },
+            { text: 'practice', size: 38, count: 187 },
+            { text: 'understanding', size: 32, count: 156 },
+            { text: 'confident', size: 28, count: 134 },
+            { text: 'improve', size: 25, count: 123 }
+          ],
+          totalComments: 1234,
+          uniqueWords: 567,
+          topWord: ['revision', 234],
+          academicYear: '2025-26',
+          cycle: 'All Cycles'
+        }
       }
       throw error
     }
@@ -349,17 +373,49 @@ export const API = {
 
   async getCommentInsights(establishmentId, filters = {}) {
     try {
-      const response = await apiClient.get(`${this.getBaseUrl()}/api/comment-insights`, {
-        params: {
-          establishment_id: establishmentId,
-          ...filters
-        }
+      // Build params with proper filter names
+      const params = {
+        establishment_id: establishmentId
+      }
+      
+      // Add filters if present
+      if (filters.cycle) params.cycle = filters.cycle
+      if (filters.academicYear) params.academic_year = filters.academicYear
+      if (filters.yearGroup) params.year_group = filters.yearGroup
+      if (filters.group) params.group = filters.group
+      if (filters.faculty) params.faculty = filters.faculty
+      if (filters.studentId) params.student_id = filters.studentId
+      
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/comments/themes`, {
+        params
       })
       return response.data
     } catch (error) {
+      console.error('Error fetching comment insights:', error)
       if (import.meta.env.DEV) {
         console.warn('Using mock data for comment insights')
-        return MOCK_DATA.commentInsights
+        return {
+          themes: {
+            positive: [
+              { name: 'Strong Work Ethic', count: 45, id: 'pos_1' },
+              { name: 'Good Progress', count: 38, id: 'pos_2' },
+              { name: 'Excellent Understanding', count: 32, id: 'pos_3' }
+            ],
+            improvement: [
+              { name: 'Time Management', count: 28, id: 'imp_1' },
+              { name: 'Revision Strategies', count: 23, id: 'imp_2' },
+              { name: 'More Practice Needed', count: 19, id: 'imp_3' }
+            ]
+          },
+          sampleComments: [
+            { text: 'I need to focus more on revision techniques to improve my understanding.', yearGroup: '11', date: '2024-03-15' },
+            { text: 'Practice tests are really helping me feel more confident about exams.', yearGroup: '10', date: '2024-03-14' },
+            { text: 'Working on time management has made a big difference.', yearGroup: '12', date: '2024-03-13' }
+          ],
+          totalComments: 543,
+          academicYear: '2025-26',
+          cycle: 'All Cycles'
+        }
       }
       throw error
     }

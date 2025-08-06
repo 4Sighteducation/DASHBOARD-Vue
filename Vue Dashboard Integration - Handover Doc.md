@@ -1019,6 +1019,44 @@ Current Status After Session 11
   - Student count calculations
   - Distribution data display
 
+Recent Updates (January 2025 - Session 12 - Student Responses Modal)
+====================================================================
+
+41. Student Responses Modal Implementation & Fixes
+--------------------------------------------------
+Problem: Individual student responses modal had multiple issues:
+- Backend parameter mismatch causing 500 errors
+- Horizontal scrolling due to table width exceeding modal
+- Poor color contrast and readability
+- Oversized modal with washed-out colors
+
+Solutions Implemented:
+
+### Backend Fix:
+- Fixed parameter name mismatch: backend expected `student_id` not `studentId`
+- Single line change in app.py resolved the 500 error
+
+### Frontend CSS Overhaul:
+1. **Modal Sizing**: Reduced from 1200px to 800px max-width
+2. **Table Layout**: Fixed layout with explicit column widths (70% / 15% / 15%)
+3. **Color Scheme**: 
+   - Student header: White text on #2a3c7a background
+   - Clean, high-contrast colors throughout
+   - Removed gradient overlays for better readability
+4. **RAG Indicators**: Simplified to colored dots without symbols
+5. **Responsive Design**: Proper mobile/tablet breakpoints
+6. **Overflow Control**: Eliminated horizontal scrolling completely
+
+The modal now displays individual student question responses with:
+- Clear summary cards (Green/Amber/Red/None counts)
+- Scrollable table of all responses
+- RAG rating for each question
+- Clean, professional appearance
+
+Files Modified:
+- app.py (parameter fix)
+- DASHBOARD-Vue/src/components/QLA/StudentResponsesModal.vue (complete CSS rewrite)
+
 Outstanding Issues
 ------------------
 - ❌ Comment Insights/Word Cloud section not implemented

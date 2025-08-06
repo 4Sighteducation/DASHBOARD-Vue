@@ -218,8 +218,14 @@ export const useDashboardStore = defineStore('dashboard', {
               insights: []
             }
           }),
-          API.getWordCloudData(this.selectedEstablishment, this.activeFilters),
-          API.getCommentInsights(this.selectedEstablishment, this.activeFilters)
+          API.getWordCloudData(this.selectedEstablishment, this.activeFilters).catch(err => {
+            console.error('[Dashboard Store] Word Cloud API Error:', err)
+            return null
+          }),
+          API.getCommentInsights(this.selectedEstablishment, this.activeFilters).catch(err => {
+            console.error('[Dashboard Store] Comment Insights API Error:', err)
+            return null
+          })
         ])
         
         console.log('[Dashboard Store] QLA Data loaded:', qlaData)

@@ -57,10 +57,6 @@
               </td>
               <td class="rag-indicator">
                 <div class="rag-circle" :class="`rag-${response.ragRating}`">
-                  <span v-if="response.ragRating === 'green'">✓</span>
-                  <span v-else-if="response.ragRating === 'amber'">!</span>
-                  <span v-else-if="response.ragRating === 'red'">✗</span>
-                  <span v-else>-</span>
                 </div>
               </td>
             </tr>
@@ -149,19 +145,20 @@ onMounted(async () => {
 .student-info {
   text-align: center;
   margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 15px;
+  background: #2a3c7a;
+  border-radius: 8px;
 }
 
 .student-info h4 {
   margin: 0;
   font-size: 1.25rem;
-  color: #1f2937;
+  color: white;
   font-weight: 600;
 }
 
 .student-email {
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.9);
   margin: 5px 0;
   font-size: 0.875rem;
 }
@@ -169,8 +166,9 @@ onMounted(async () => {
 .cycle-indicator {
   display: inline-block;
   padding: 4px 12px;
-  background: #3b82f6;
+  background: rgba(255, 255, 255, 0.2);
   color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   font-size: 0.75rem;
   margin-top: 8px;
