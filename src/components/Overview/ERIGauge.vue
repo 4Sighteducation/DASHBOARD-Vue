@@ -23,7 +23,7 @@ defineProps({
 .eri-gauge-container {
   background: var(--card-bg);
   border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
+  padding: 0.75rem;
   text-align: center;
   border: 1px solid var(--border-color);
 }
@@ -31,12 +31,12 @@ defineProps({
 .gauge-title {
   font-size: 1.125rem;
   font-weight: 600;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
 
 .gauge-wrapper {
-  padding: var(--spacing-md);
+  padding: 0.5rem;
 }
 
 .gauge-value {
@@ -49,7 +49,7 @@ defineProps({
 .gauge-label {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 0.5rem;
 }
 
 .gauge-comparison {

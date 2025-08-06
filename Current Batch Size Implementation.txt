@@ -1,0 +1,77 @@
+Current Batch Size Implementation
+The app currently uses BATCH_SIZE = 50 for most queries (with one exception at 100 for simpler queries). This was chosen to avoid the "414 Request-URI Too Large" error that occurs when too many UUIDs are included in the URL parameters.
+Why 50? The URL Length Constraint
+The bottleneck is that Supabase's .in_() operator sends the list of IDs as URL parameters in a GET request. With UUIDs being 36 characters each:
+50 UUIDs ≈ 1,800 characters in the URL
+100 UUIDs ≈ 3,600 characters
+200 UUIDs ≈ 7,200 characters (likely to hit URL limits)
+Most web servers have URL length limits around 2,000-8,000 characters, with some as low as 2,048.
+Options for Performance Improvement
+1. Increase Batch Size Carefully (Quick Win)
+You could experiment with increasing to 75-100 for most queries:
+python
+BATCH_SIZE = 75  # or 100
+This would reduce the number of round trips by 33-50%, but you'd need to monitor for 414 errors.
+2. Use POST Requests with RPC (Better Solution)
+Create a Supabase RPC function that accepts POST requests with student IDs in the body:
+sql
+CREATE OR REPLACE FUNCTION get_vespa_scores_batch(
+  student_ids uuid[],
+  cycle_num integer
+)
+RETURNS TABLE(...) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT * FROM vespa_scores
+  WHERE student_id = ANY(student_ids)
+  AND cycle = cycle_num;
+END;
+$$ LANGUAGE plpgsql;
+Then in Python:
+python
+result = supabase_client.rpc('get_vespa_scores_batch', {
+    'student_ids': batch_ids,
+    'cycle_num': cycle
+}).execute()
+This could handle 500+ IDs per batch safely.
+3. Parallel Batch Processing (Advanced)
+Process multiple batches concurrently:
+python
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+def fetch_batch(batch_ids):
+    return supabase_client.table('vespa_scores')\
+        .select('*')\
+        .in_('student_id', batch_ids)\
+        .eq('cycle', cycle)\
+        .execute()
+# Process 4 batches in parallel
+with ThreadPoolExecutor(max_workers=4) as executor:
+    futures = []
+    for i in range(0, len(student_ids), BATCH_SIZE):
+        batch_ids = student_ids[i:i + BATCH_SIZE]
+        futures.append(executor.submit(fetch_batch, batch_ids))
+    
+    results = [f.result() for f in futures]
+4. Server-Side Aggregation (Best for Production)
+Pre-aggregate data in Supabase views or materialized views:
+sql
+CREATE MATERIALIZED VIEW school_vespa_aggregates AS
+SELECT 
+  establishment_id,
+  cycle,
+  academic_year,
+  -- Pre-calculated distributions
+  ...
+WITH DATA;
+-- Refresh periodically
+REFRESH MATERIALIZED VIEW school_vespa_aggregates;
+Performance Impact Analysis
+For a school with 2,000 students:
+Current (50/batch): 40 requests × ~200ms = 8 seconds
+Increased (100/batch): 20 requests × ~250ms = 5 seconds (37% faster)
+RPC with 500/batch: 4 requests × ~400ms = 1.6 seconds (80% faster)
+Parallel (4 workers): 40 requests ÷ 4 × ~200ms = 2 seconds (75% faster)
+Pre-aggregated: 1 request × ~100ms = 0.1 seconds (98% faster)
+My Recommendation
+Short term (immediate):Try increasing BATCH_SIZE to 75-100 and monitor for errors. This is a simple change that could give 25-40% speed improvement.Medium term (this week):Implement RPC functions for batch operations. This would allow much larger batches and give 70-80% improvement.Long term (best solution):Create materialized views for common aggregations. This would make the dashboard nearly instant even for large schools.Would you like me to implement any of these optimizations? The batch size increase would be the quickest to test.

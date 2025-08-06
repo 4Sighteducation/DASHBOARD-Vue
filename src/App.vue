@@ -196,7 +196,7 @@ onMounted(() => {
 /* Vue-specific styles */
 .dashboard-container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #0f0f23;
 }
 
 .dashboard-loading,
@@ -252,15 +252,15 @@ onMounted(() => {
   display: flex;
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  padding: 0.5rem;
-  margin: 0 0 var(--spacing-md) 0;
-  gap: 0.5rem;
+  padding: 0.25rem;
+  margin: 0 0 0.5rem 0;
+  gap: 0.25rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .tab-button {
   flex: 1;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-sm);

@@ -277,8 +277,8 @@ onMounted(() => {
   background: linear-gradient(135deg, rgba(44, 62, 80, 0.05) 0%, rgba(52, 73, 94, 0.05) 100%);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
-  margin: var(--spacing-lg) 0;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
@@ -296,7 +296,7 @@ onMounted(() => {
 
 .filter-container {
   display: flex;
-  gap: var(--spacing-lg);
+  gap: 0.75rem;
   align-items: flex-end;
   flex-wrap: wrap;
 }

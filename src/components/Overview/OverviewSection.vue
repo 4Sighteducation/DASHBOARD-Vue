@@ -305,7 +305,7 @@ const getNationalDistribution = (elementKey) => {
 
 <style scoped>
 .overview-section {
-  padding: var(--spacing-lg) 0;
+  padding: 0.75rem 0;
 }
 
 .section-loading {
@@ -335,7 +335,7 @@ const getNationalDistribution = (elementKey) => {
 .section-title {
   font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 0.75rem;
   color: var(--text-primary);
   text-align: center;
 }
@@ -344,7 +344,7 @@ const getNationalDistribution = (elementKey) => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 0.75rem;
 }
 
 @media (max-width: 1024px) {
@@ -368,7 +368,7 @@ const getNationalDistribution = (elementKey) => {
 .chart-card {
   background: var(--card-bg);
   border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
+  padding: 0.75rem;
   border: 1px solid var(--border-color);
 }
 
@@ -386,7 +386,7 @@ const getNationalDistribution = (elementKey) => {
 .eri-section {
   display: flex;
   justify-content: center;
-  padding: var(--spacing-lg) 0;
+  padding: 0.75rem 0;
 }
 
 @media (max-width: 768px) {

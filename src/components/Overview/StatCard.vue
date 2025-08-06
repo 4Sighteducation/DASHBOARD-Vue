@@ -62,7 +62,7 @@ function getIconPath(icon) {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
+  padding: 0.75rem;
   transition: all 0.3s ease;
 }
 

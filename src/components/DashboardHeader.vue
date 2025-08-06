@@ -62,7 +62,7 @@ function openEstablishmentSelector() {
 .dashboard-header {
   background: var(--secondary-bg);
   border-bottom: 1px solid var(--border-color);
-  padding: var(--spacing-md) 0;
+  padding: 0.5rem 0;
   position: sticky;
   top: 0;
   z-index: 100;
