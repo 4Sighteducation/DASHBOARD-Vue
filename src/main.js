@@ -6,10 +6,19 @@ import App from './App.vue'
 window.initializeVueDashboard = function() {
   console.log('Vue Dashboard: Initializing...')
   
-  // Check if WordCloud2 is available (should be loaded by AppLoader)
+  // First check if WordCloud2 is available
   if (typeof window.WordCloud === 'undefined') {
-    console.warn('WordCloud2 not available - word clouds will use fallback rendering')
-    console.warn('AppLoader should have loaded: https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js')
+    console.warn('WordCloud2 not immediately available, checking again in 500ms...')
+    
+    // Try again after a short delay (CDN script might still be executing)
+    setTimeout(() => {
+      if (typeof window.WordCloud === 'undefined') {
+        console.error('WordCloud2 still not available after delay - will use fallback rendering')
+        console.warn('AppLoader should have loaded: https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js')
+      } else {
+        console.log('WordCloud2 became available after delay!')
+      }
+    }, 500)
   } else {
     console.log('WordCloud2 is available and ready!')
   }

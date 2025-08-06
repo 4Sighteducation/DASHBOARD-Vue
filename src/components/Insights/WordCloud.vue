@@ -160,12 +160,29 @@ const handleResize = () => {
 onMounted(async () => {
   await nextTick()
   
-  // Wait a bit for the wordcloud library to initialize
-  setTimeout(() => {
-    console.log('Checking for WordCloud:', typeof window.WordCloud)
-    isLoading.value = true
-    generateWordCloud()
-  }, 100)
+  // Wait for WordCloud2 to be available (with multiple retries)
+  let retries = 0
+  const maxRetries = 10
+  const checkInterval = 200 // Check every 200ms
+  
+  const checkAndGenerate = () => {
+    if (typeof window.WordCloud !== 'undefined') {
+      console.log('WordCloud2 found! Generating word cloud...')
+      isLoading.value = true
+      generateWordCloud()
+    } else if (retries < maxRetries) {
+      retries++
+      console.log(`WordCloud2 not ready, retry ${retries}/${maxRetries}...`)
+      setTimeout(checkAndGenerate, checkInterval)
+    } else {
+      console.error('WordCloud2 not available after all retries, using fallback')
+      isLoading.value = true
+      generateWordCloud() // Will use fallback
+    }
+  }
+  
+  // Start checking
+  checkAndGenerate()
   
   // Add resize listener
   window.addEventListener('resize', handleResize)
