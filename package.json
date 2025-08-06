@@ -19,7 +19,8 @@
     "chartjs-plugin-annotation": "^3.1.0",
     "pinia": "^3.0.3",
     "vite": "^7.0.6",
-    "vue": "^3.5.18"
+    "vue": "^3.5.18",
+    "wordcloud": "^1.2.3"
   },
   "devDependencies": {
     "@rollup/rollup-win32-x64-msvc": "^4.46.2"
