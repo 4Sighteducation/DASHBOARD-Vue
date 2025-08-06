@@ -29,30 +29,7 @@
             <div class="empty-icon">🔍</div>
             <p>{{ wordCloudData?.message || 'No comment data available for the selected filters.' }}</p>
           </div>
-          <div v-else class="word-cloud-wrapper">
-            <div class="word-cloud-display">
-              <span v-for="(word, index) in displayWords" 
-                    :key="index"
-                    :class="['word', getWordColorClass(index)]"
-                    :style="getWordStyle(word)">
-                {{ word.text }}
-              </span>
-            </div>
-            <div class="word-stats">
-              <div class="stat">
-                <span class="stat-label">Comments</span>
-                <span class="stat-value">{{ wordCloudData.totalComments || 0 }}</span>
-              </div>
-              <div class="stat">
-                <span class="stat-label">Unique Words</span>
-                <span class="stat-value">{{ wordCloudData.uniqueWords || 0 }}</span>
-              </div>
-              <div v-if="wordCloudData.topWord" class="stat">
-                <span class="stat-label">Most Common</span>
-                <span class="stat-value">"{{ wordCloudData.topWord[0] }}" ({{ wordCloudData.topWord[1] }}×)</span>
-              </div>
-            </div>
-          </div>
+          <WordCloudCanvas v-else :data="wordCloudData" />
         </div>
       </div>
 
@@ -135,6 +112,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import WordCloudCanvas from './WordCloudCanvas.vue'
 
 const props = defineProps({
   data: Object,
@@ -178,30 +156,6 @@ const cycleLabel = computed(() => {
   const cycle = commentInsights.value?.cycle || wordCloudData.value?.cycle
   return cycle === 'All Cycles' ? cycle : `Cycle ${cycle}`
 })
-
-const displayWords = computed(() => {
-  if (!wordCloudData.value?.wordCloudData) return []
-  // Take top 40 words for display
-  return wordCloudData.value.wordCloudData.slice(0, 40)
-})
-
-function getWordColorClass(index) {
-  const colors = ['orange', 'blue', 'green', 'purple', 'magenta', 'yellow']
-  return `color-${colors[index % colors.length]}`
-}
-
-function getWordStyle(word) {
-  // Scale font size based on word size
-  const minFont = 14
-  const maxFont = 48
-  const size = Math.min(maxFont, Math.max(minFont, word.size))
-  
-  return {
-    fontSize: `${size}px`,
-    opacity: 0.7 + (word.size / 60) * 0.3,
-    fontWeight: size > 30 ? '600' : '400'
-  }
-}
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
@@ -329,76 +283,6 @@ function formatDate(dateStr) {
   background: #1a1a2e;
   min-height: 400px;
   position: relative;
-}
-
-.word-cloud-wrapper {
-  position: relative;
-  height: 100%;
-}
-
-.word-cloud-display {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  min-height: 300px;
-}
-
-.word {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: lowercase;
-  font-family: 'Inter', sans-serif;
-  white-space: nowrap;
-}
-
-.word:hover {
-  transform: scale(1.2);
-  opacity: 1 !important;
-}
-
-/* Word Colors */
-.word.color-orange { color: #ff8f00; }
-.word.color-blue { color: #86b4f0; }
-.word.color-green { color: #72cb44; }
-.word.color-purple { color: #7f31a4; }
-.word.color-magenta { color: #f032e6; }
-.word.color-yellow { color: #ffd93d; }
-
-.word-stats {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  display: flex;
-  gap: 2rem;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-value {
-  font-size: 1.125rem;
-  color: #fff;
-  font-weight: 600;
-  margin-top: 0.25rem;
 }
 
 /* Themes Section */
@@ -590,16 +474,6 @@ function formatDate(dateStr) {
   
   .comments-container {
     grid-template-columns: 1fr;
-  }
-  
-  .word-stats {
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem;
-  }
-  
-  .word-cloud-display {
-    padding: 1rem;
   }
 }
 </style>
