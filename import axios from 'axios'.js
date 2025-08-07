@@ -331,41 +331,17 @@ export const API = {
 
   async getWordCloudData(establishmentId, filters = {}) {
     try {
-      // Build params with proper filter names
-      const params = {
-        establishment_id: establishmentId
-      }
-      
-      // Add filters if present
-      if (filters.cycle) params.cycle = filters.cycle
-      if (filters.academicYear) params.academic_year = filters.academicYear
-      if (filters.yearGroup) params.year_group = filters.yearGroup
-      if (filters.group) params.group = filters.group
-      if (filters.faculty) params.faculty = filters.faculty
-      if (filters.studentId) params.student_id = filters.studentId
-      
-      const response = await apiClient.get(`${this.getBaseUrl()}/api/comments/word-cloud`, {
-        params
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/word-cloud`, {
+        params: {
+          establishment_id: establishmentId,
+          ...filters
+        }
       })
       return response.data
     } catch (error) {
-      console.error('Error fetching word cloud data:', error)
       if (import.meta.env.DEV) {
         console.warn('Using mock data for word cloud')
-        return {
-          wordCloudData: [
-            { text: 'revision', size: 45, count: 234 },
-            { text: 'practice', size: 38, count: 187 },
-            { text: 'understanding', size: 32, count: 156 },
-            { text: 'confident', size: 28, count: 134 },
-            { text: 'improve', size: 25, count: 123 }
-          ],
-          totalComments: 1234,
-          uniqueWords: 567,
-          topWord: ['revision', 234],
-          academicYear: '2025-26',
-          cycle: 'All Cycles'
-        }
+        return MOCK_DATA.wordCloudData
       }
       throw error
     }
@@ -373,49 +349,17 @@ export const API = {
 
   async getCommentInsights(establishmentId, filters = {}) {
     try {
-      // Build params with proper filter names
-      const params = {
-        establishment_id: establishmentId
-      }
-      
-      // Add filters if present
-      if (filters.cycle) params.cycle = filters.cycle
-      if (filters.academicYear) params.academic_year = filters.academicYear
-      if (filters.yearGroup) params.year_group = filters.yearGroup
-      if (filters.group) params.group = filters.group
-      if (filters.faculty) params.faculty = filters.faculty
-      if (filters.studentId) params.student_id = filters.studentId
-      
-      const response = await apiClient.get(`${this.getBaseUrl()}/api/comments/themes`, {
-        params
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/comment-insights`, {
+        params: {
+          establishment_id: establishmentId,
+          ...filters
+        }
       })
       return response.data
     } catch (error) {
-      console.error('Error fetching comment insights:', error)
       if (import.meta.env.DEV) {
         console.warn('Using mock data for comment insights')
-        return {
-          themes: {
-            positive: [
-              { name: 'Strong Work Ethic', count: 45, id: 'pos_1' },
-              { name: 'Good Progress', count: 38, id: 'pos_2' },
-              { name: 'Excellent Understanding', count: 32, id: 'pos_3' }
-            ],
-            improvement: [
-              { name: 'Time Management', count: 28, id: 'imp_1' },
-              { name: 'Revision Strategies', count: 23, id: 'imp_2' },
-              { name: 'More Practice Needed', count: 19, id: 'imp_3' }
-            ]
-          },
-          sampleComments: [
-            { text: 'I need to focus more on revision techniques to improve my understanding.', yearGroup: '11', date: '2024-03-15' },
-            { text: 'Practice tests are really helping me feel more confident about exams.', yearGroup: '10', date: '2024-03-14' },
-            { text: 'Working on time management has made a big difference.', yearGroup: '12', date: '2024-03-13' }
-          ],
-          totalComments: 543,
-          academicYear: '2025-26',
-          cycle: 'All Cycles'
-        }
+        return MOCK_DATA.commentInsights
       }
       throw error
     }
@@ -447,116 +391,6 @@ export const API = {
       .filter(([_, value]) => value !== null && value !== undefined && value !== '')
       .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
       .join('&')
-  },
-
-  async getStudentResponses(studentId, cycle = 1) {
-    console.log('[API] getStudentResponses called with studentId:', studentId, 'cycle:', cycle)
-    
-    if (!studentId) {
-      console.error('[API] Student ID is missing')
-      throw new Error('Student ID is required')
-    }
-    
-    try {
-      const response = await apiClient.get(`${this.getBaseUrl()}/api/student-responses`, {
-        params: {
-          student_id: studentId,
-          cycle: cycle
-        }
-      })
-      console.log('[API] Student responses received:', response.data)
-      return response.data
-    } catch (error) {
-      console.error('[API] Error fetching student responses:', error)
-      if (import.meta.env.DEV) {
-        console.warn('Using mock data for student responses')
-        // Return mock data for development
-        return {
-          student: {
-            name: 'John Doe',
-            email: 'john.doe@school.edu'
-          },
-          cycle: cycle,
-          summary: {
-            green: 15,
-            amber: 8,
-            red: 3,
-            none: 0
-          },
-          responses: [
-            { questionId: 'q1', questionText: 'I work as hard as I can in most classes', responseValue: 4, ragRating: 'green' },
-            { questionId: 'q2', questionText: 'I complete all my homework on time', responseValue: 3, ragRating: 'amber' },
-            { questionId: 'q3', questionText: 'I enjoy studying', responseValue: 2, ragRating: 'red' }
-          ]
-        }
-      }
-      // Throw the actual error from the backend if available
-      if (error.response && error.response.data && error.response.data.error) {
-        throw new Error(error.response.data.error)
-      }
-      throw error
-    }
-  },
-
-  async generateComparativeReport(reportConfig) {
-    console.log('[API] generateComparativeReport called with config:', reportConfig)
-    
-    try {
-      const response = await apiClient.post(
-        `${this.getBaseUrl()}/api/comparative-report`,
-        reportConfig,
-        {
-          responseType: 'blob', // Important for PDF download
-          timeout: 60000 // 60 seconds for report generation
-        }
-      )
-      
-      console.log('[API] Comparative report generated successfully')
-      return response
-    } catch (error) {
-      console.error('[API] Error generating comparative report:', error)
-      
-      if (import.meta.env.DEV) {
-        console.warn('Using mock PDF for development')
-        // Create a mock PDF blob for development
-        const mockPdfContent = `%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /MediaBox [0 0 612 792] /Contents 4 0 R >>
-endobj
-4 0 obj
-<< /Length 44 >>
-stream
-BT
-/F1 24 Tf
-100 700 Td
-(Mock Comparative Report) Tj
-ET
-endstream
-endobj
-xref
-0 5
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000274 00000 n 
-trailer
-<< /Size 5 /Root 1 0 R >>
-startxref
-365
-%%EOF`
-        const blob = new Blob([mockPdfContent], { type: 'application/pdf' })
-        return { data: blob }
-      }
-      
-      throw error
-    }
   }
 }
 
@@ -571,7 +405,5 @@ export const {
   getQLAData,
   getWordCloudData,
   getCommentInsights,
-  getEstablishmentName,
-  getStudentResponses,
-  generateComparativeReport
+  getEstablishmentName
 } = API
