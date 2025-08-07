@@ -187,8 +187,49 @@
             </div>
           </div>
 
-          <!-- Step 3: Visualizations -->
-          <div v-if="currentStep === 2" class="visualization-step">
+          <!-- Step 3: Context & Scope -->
+          <div v-if="currentStep === 2" class="context-step">
+            <h4>Provide Context for AI Analysis</h4>
+            <p class="info-text">Help the AI understand your specific needs and concerns to generate more relevant insights.</p>
+            
+            <div class="context-section">
+              <div class="form-group">
+                <label>Background & Scope</label>
+                <textarea 
+                  v-model="reportConfig.organizationalContext"
+                  placeholder="E.g., 'We expected Year 13 students to show more exam confidence and academic momentum as they approach their exams, but the data shows the opposite. We're particularly concerned about the decline in effort and practice scores.'"
+                  rows="4"
+                  class="context-textarea"
+                ></textarea>
+                <span class="field-hint">Describe your expectations, concerns, or specific areas of focus</span>
+              </div>
+              
+              <div class="form-group">
+                <label>Specific Questions to Address</label>
+                <textarea 
+                  v-model="reportConfig.specificQuestions"
+                  placeholder="E.g., 'Why might Year 13 students be showing lower engagement? What interventions could help improve practice scores? Are there patterns in the timing of these declines?'"
+                  rows="3"
+                  class="context-textarea"
+                ></textarea>
+                <span class="field-hint">List any specific questions you want the analysis to answer</span>
+              </div>
+              
+              <div class="form-group">
+                <label>Historical Context (Optional)</label>
+                <textarea 
+                  v-model="reportConfig.historicalContext"
+                  placeholder="E.g., 'Last year we implemented a new mentoring program. We've recently changed our assessment schedule. There have been staffing changes in key departments.'"
+                  rows="3"
+                  class="context-textarea"
+                ></textarea>
+                <span class="field-hint">Mention any recent changes or historical factors that might be relevant</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Visualizations -->
+          <div v-if="currentStep === 3" class="visualization-step">
             <h4>Select Report Components</h4>
             <p class="info-text">VESPA charts and Radar chart are always included</p>
             
@@ -358,6 +399,7 @@ const configurationName = ref('')
 const steps = [
   { id: 'type', label: 'Report Type' },
   { id: 'configure', label: 'Configure' },
+  { id: 'context', label: 'Context & Scope' },
   { id: 'visualize', label: 'Visualizations' }
 ]
 
@@ -380,6 +422,10 @@ const reportConfig = ref({
   hybridDimension: '',
   hybridItem1: '',
   hybridItem2: '',
+  // Context for AI insights
+  organizationalContext: '',
+  specificQuestions: '',
+  historicalContext: '',
   // Visualizations
   includeDistributions: true,
   includeTopBottom: true,
@@ -936,6 +982,64 @@ const saveReportConfiguration = () => {
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+}
+
+/* Context Step Styles */
+.context-step {
+  padding: 1rem;
+}
+
+.context-step h4 {
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.context-section {
+  margin-top: 1.5rem;
+}
+
+.context-section .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.context-section label {
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.context-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  transition: all 0.2s;
+}
+
+.context-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.context-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
 }
 
 /* Footer */
