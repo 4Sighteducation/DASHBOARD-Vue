@@ -3,42 +3,40 @@
     <!-- Main wizard modal -->
     <Modal v-if="show && !showReportViewer" @close="handleClose" class="comparative-report-modal">
       <template #header>
-      <div class="modal-header-content">
-        <h3>Generate Comparative Report</h3>
-        <span class="super-user-badge">
-          <svg class="badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-          </svg>
-          Premium Feature
-        </span>
-      </div>
-    </template>
-
-    <div class="wizard-container">
-      <!-- Progress Steps -->
-      <div class="progress-steps">
-        <div 
-          v-for="(step, index) in steps" 
-          :key="step.id"
-          :class="['step', { 
-            active: currentStep === index,
-            completed: currentStep > index 
-          }]"
-        >
-          <div class="step-number">{{ index + 1 }}</div>
-          <div class="step-label">{{ step.label }}</div>
+        <div class="modal-header-content">
+          <h3>Generate Comparative Report</h3>
+          <span class="super-user-badge">
+            <svg class="badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+            </svg>
+            Premium Feature
+          </span>
         </div>
-      </div>
+      </template>
 
-      <!-- Step Content -->
-      <div class="step-content">
-        <transition name="slide-fade" mode="out-in">
+      <div class="wizard-container">
+        <!-- Progress Steps (3 steps) -->
+        <div class="progress-steps">
+          <div 
+            v-for="(step, index) in steps" 
+            :key="step.id"
+            :class="['step', { 
+              active: currentStep === index,
+              completed: currentStep > index 
+            }]"
+            @click="currentStep > index ? currentStep = index : null"
+          >
+            <div class="step-number">{{ index + 1 }}</div>
+            <div class="step-label">{{ step.label }}</div>
+          </div>
+        </div>
+
+        <!-- Step Content -->
+        <div class="step-content">
           <!-- Step 1: Report Type -->
-          <div v-if="currentStep === 0" key="step1" class="step-panel">
+          <div v-if="currentStep === 0" class="report-type-selection">
             <h4>Select Report Type</h4>
-            <p class="step-description">Choose the type of comparison you want to analyze</p>
-            
-            <div class="report-types">
+            <div class="report-type-grid">
               <div 
                 v-for="type in reportTypes" 
                 :key="type.id"
@@ -46,430 +44,284 @@
                 @click="selectReportType(type.id)"
               >
                 <div class="type-icon">{{ type.icon }}</div>
-                <div class="type-content">
-                  <h5>{{ type.title }}</h5>
-                  <p>{{ type.description }}</p>
-                </div>
-                <div class="type-examples">
-                  <span class="example-label">Examples:</span>
-                  <ul>
-                    <li v-for="example in type.examples" :key="example">{{ example }}</li>
-                  </ul>
-                </div>
+                <h5>{{ type.name }}</h5>
+                <p>{{ type.description }}</p>
+                <div v-if="type.availability === 'future'" class="coming-soon-badge">Coming Soon</div>
               </div>
             </div>
           </div>
 
-          <!-- Step 2: Variables Selection -->
-          <div v-if="currentStep === 1" key="step2" class="step-panel">
-            <h4>{{ variableStepTitle }}</h4>
-            <p class="step-description">{{ variableStepDescription }}</p>
+          <!-- Step 2: Configuration -->
+          <div v-if="currentStep === 1" class="configuration-step">
+            <h4>Configure Comparison</h4>
+            
+            <!-- Dynamic configuration based on report type -->
+            <div class="config-section">
+              <!-- Cycle vs Cycle -->
+              <div v-if="reportConfig.type === 'cycle_vs_cycle'" class="config-group">
+                <label>Select Two Cycles to Compare:</label>
+                <div class="dual-select">
+                  <select v-model="reportConfig.cycle1" class="form-select">
+                    <option value="">Cycle 1</option>
+                    <option value="1">Cycle 1</option>
+                    <option value="2">Cycle 2</option>
+                    <option value="3" v-if="hasCycle3Data">Cycle 3</option>
+                  </select>
+                  <span class="vs-text">vs</span>
+                  <select v-model="reportConfig.cycle2" class="form-select">
+                    <option value="">Cycle 2</option>
+                    <option value="1">Cycle 1</option>
+                    <option value="2">Cycle 2</option>
+                    <option value="3" v-if="hasCycle3Data">Cycle 3</option>
+                  </select>
+                </div>
+              </div>
 
-            <!-- Cycle Comparison -->
-            <div v-if="reportConfig.type === 'cycle_progression'" class="variable-selection">
-              <div class="selection-group">
-                <label>Select Cycles to Compare</label>
-                <div class="cycle-checkboxes">
-                  <label v-for="cycle in [1, 2, 3]" :key="cycle" class="checkbox-label">
+              <!-- Year Group vs Year Group -->
+              <div v-if="reportConfig.type === 'year_group_vs_year_group'" class="config-group">
+                <label>Select Two Year Groups to Compare:</label>
+                <div class="dual-select">
+                  <select v-model="reportConfig.yearGroup1" class="form-select">
+                    <option value="">Select Year Group</option>
+                    <option v-for="yg in availableYearGroups" :key="yg" :value="yg">Year {{ yg }}</option>
+                  </select>
+                  <span class="vs-text">vs</span>
+                  <select v-model="reportConfig.yearGroup2" class="form-select">
+                    <option value="">Select Year Group</option>
+                    <option v-for="yg in availableYearGroups" :key="yg" :value="yg">Year {{ yg }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Group vs Group -->
+              <div v-if="reportConfig.type === 'group_vs_group'" class="config-group">
+                <label>Select Cycle:</label>
+                <select v-model="reportConfig.cycle" class="form-select">
+                  <option value="1">Cycle 1</option>
+                  <option value="2">Cycle 2</option>
+                  <option value="3" v-if="hasCycle3Data">Cycle 3</option>
+                </select>
+                
+                <label class="mt-3">Select Groups to Compare (up to 4):</label>
+                <div class="checkbox-grid">
+                  <label v-for="group in availableGroups" :key="group" class="checkbox-item">
                     <input 
                       type="checkbox" 
-                      :value="cycle"
-                      v-model="reportConfig.cycles"
-                      :disabled="reportConfig.cycles.length >= 2 && !reportConfig.cycles.includes(cycle)"
-                    />
-                    <span>Cycle {{ cycle }}</span>
+                      :value="group"
+                      v-model="reportConfig.selectedGroups"
+                      :disabled="reportConfig.selectedGroups.length >= 4 && !reportConfig.selectedGroups.includes(group)"
+                    >
+                    {{ group }}
                   </label>
                 </div>
-                <p class="help-text">Select 2 or more cycles to compare</p>
               </div>
-            </div>
 
-            <!-- Group Comparison -->
-            <div v-if="reportConfig.type === 'group_comparison'" class="variable-selection">
-              <div class="selection-group">
-                <label>Comparison Dimension</label>
-                <select v-model="reportConfig.groupDimension" class="form-select">
-                  <option value="">Select dimension...</option>
-                  <option value="year_group">Year Group</option>
-                  <option value="faculty">Faculty</option>
-                  <option value="gender">Gender</option>
-                  <option value="fsm">FSM Status</option>
-                  <option value="eal">EAL Status</option>
+              <!-- Progress Report -->
+              <div v-if="reportConfig.type === 'progress'" class="config-group">
+                <label>Select Group Type:</label>
+                <div class="radio-group">
+                  <label>
+                    <input type="radio" v-model="reportConfig.progressType" value="year_group">
+                    Year Group
+                  </label>
+                  <label>
+                    <input type="radio" v-model="reportConfig.progressType" value="group">
+                    Group
+                  </label>
+                </div>
+                
+                <label class="mt-3">Select Specific {{ reportConfig.progressType === 'year_group' ? 'Year Group' : 'Group' }}:</label>
+                <select v-model="reportConfig.progressGroup" class="form-select">
+                  <option value="">Select...</option>
+                  <option v-for="item in (reportConfig.progressType === 'year_group' ? availableYearGroups : availableGroups)" 
+                          :key="item" :value="item">
+                    {{ reportConfig.progressType === 'year_group' ? 'Year ' + item : item }}
+                  </option>
                 </select>
               </div>
 
-              <div v-if="reportConfig.groupDimension" class="selection-group">
-                <label>Select Groups to Compare</label>
-                <div class="group-selection">
-                  <div v-for="group in availableGroups" :key="group.value" class="group-option">
-                    <label class="checkbox-label">
-                      <input 
-                        type="checkbox" 
-                        :value="group.value"
-                        v-model="reportConfig.groups"
-                      />
-                      <span>{{ group.label }}</span>
-                      <span class="count">({{ group.count }} students)</span>
-                    </label>
-                  </div>
+              <!-- Hybrid -->
+              <div v-if="reportConfig.type === 'hybrid'" class="config-group">
+                <label>Primary Comparison - Select Two Cycles:</label>
+                <div class="dual-select">
+                  <select v-model="reportConfig.cycle1" class="form-select">
+                    <option value="1">Cycle 1</option>
+                    <option value="2">Cycle 2</option>
+                    <option value="3" v-if="hasCycle3Data">Cycle 3</option>
+                  </select>
+                  <span class="vs-text">vs</span>
+                  <select v-model="reportConfig.cycle2" class="form-select">
+                    <option value="1">Cycle 1</option>
+                    <option value="2">Cycle 2</option>
+                    <option value="3" v-if="hasCycle3Data">Cycle 3</option>
+                  </select>
                 </div>
-              </div>
-            </div>
-
-            <!-- Benchmark Comparison -->
-            <div v-if="reportConfig.type === 'benchmark'" class="variable-selection">
-              <div class="selection-group">
-                <label>Benchmark Against</label>
-                <div class="benchmark-options">
-                  <label class="radio-label">
-                    <input type="radio" value="national" v-model="reportConfig.benchmarkType" />
-                    <span>National Average</span>
-                  </label>
-                  <label class="radio-label">
-                    <input type="radio" value="trust" v-model="reportConfig.benchmarkType" />
-                    <span>Trust Average</span>
-                  </label>
-                  <label class="radio-label">
-                    <input type="radio" value="similar" v-model="reportConfig.benchmarkType" />
-                    <span>Similar Schools</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="selection-group">
-                <label>Time Period</label>
-                <select v-model="reportConfig.benchmarkCycle" class="form-select">
-                  <option :value="1">Cycle 1</option>
-                  <option :value="2">Cycle 2</option>
-                  <option :value="3">Cycle 3</option>
-                  <option value="all">All Cycles</option>
+                
+                <label class="mt-3">Secondary Dimension:</label>
+                <select v-model="reportConfig.hybridDimension" class="form-select">
+                  <option value="year_group">Year Group Comparison</option>
+                  <option value="group">Group Comparison</option>
                 </select>
-              </div>
-            </div>
-
-            <!-- Custom Comparison -->
-            <div v-if="reportConfig.type === 'custom'" class="variable-selection">
-              <div class="custom-builder">
-                <p>Build your own comparison by selecting multiple variables</p>
-                <!-- Custom comparison builder UI -->
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 3: Metrics Selection -->
-          <div v-if="currentStep === 2" key="step3" class="step-panel">
-            <h4>Select Metrics to Include</h4>
-            <p class="step-description">Choose which metrics to analyze in your report</p>
-
-            <div class="metrics-selection">
-              <div class="metric-category">
-                <h5>VESPA Scores</h5>
-                <div class="metric-options">
-                  <label v-for="metric in vespaMetrics" :key="metric.id" class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.metrics" :value="metric.id" />
-                    <span>{{ metric.label }}</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="metric-category">
-                <h5>Additional Analytics</h5>
-                <div class="metric-options">
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.includeERI" />
-                    <span>ERI Score Analysis</span>
-                  </label>
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.includeQLA" />
-                    <span>Top/Bottom Questions</span>
-                  </label>
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.includeThemes" />
-                    <span>Comment Themes</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="metric-category">
-                <h5>Statistical Analysis</h5>
-                <div class="metric-options">
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.includeStatistics" />
-                    <span>Statistical Significance Tests</span>
-                  </label>
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.includeEffectSize" />
-                    <span>Effect Size (Cohen's d)</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 4: Context & Narrative -->
-          <div v-if="currentStep === 3" key="step4" class="step-panel">
-            <h4>Organizational Context</h4>
-            <p class="step-description">Provide context to help AI generate meaningful insights</p>
-
-            <div class="context-section">
-              <div class="context-group">
-                <label>Context/Scope (Optional but Recommended)</label>
-                <textarea 
-                  v-model="reportConfig.organizationalContext"
-                  class="context-textarea"
-                  placeholder="Example: We are comparing Year 12 and Year 13 students. We expected Year 13 to show higher confidence and readiness for exams given their additional year of preparation. Initial observations suggest this may not be the case. We're particularly interested in understanding factors that might explain any unexpected patterns in the data."
-                  rows="6"
-                ></textarea>
-                <p class="help-text">Provide narrative about your organization, expected outcomes, concerns, or specific areas of focus. This helps the AI generate more relevant and actionable insights.</p>
-              </div>
-
-              <div class="context-group">
-                <label>Specific Questions for AI Analysis (Optional)</label>
-                <textarea 
-                  v-model="reportConfig.specificQuestions"
-                  class="context-textarea"
-                  placeholder="Example:
-- Why might Year 13 students show lower confidence than Year 12?
-- What factors could explain the decline in Systems scores?
-- Are there patterns that suggest intervention opportunities?"
-                  rows="4"
-                ></textarea>
-                <p class="help-text">List specific questions you want the AI to address in its analysis.</p>
-              </div>
-
-              <div class="context-group">
-                <label>Historical Context (Optional)</label>
-                <input 
-                  type="text"
-                  v-model="reportConfig.historicalContext"
-                  class="form-input"
-                  placeholder="e.g., Post-COVID cohort, new curriculum implementation, etc."
-                />
-                <p class="help-text">Any relevant historical or situational factors affecting this cohort.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 5: Visualization Options -->
-          <div v-if="currentStep === 4" key="step5" class="step-panel">
-            <h4>Visualization & Branding</h4>
-            <p class="step-description">Customize the appearance of your report</p>
-
-            <div class="viz-options">
-              <div class="viz-category">
-                <h5>Report Branding</h5>
-                <div class="branding-options">
-                  <div class="logo-upload-section">
-                    <label>Establishment Logo URL (Optional)</label>
-                    <div class="logo-input-group">
-                      <input 
-                        type="url"
-                        v-model="reportConfig.establishmentLogoUrl"
-                        class="form-input"
-                        placeholder="https://example.com/logo.png"
-                      />
-                      <button 
-                        v-if="reportConfig.establishmentLogoUrl"
-                        @click="previewLogo"
-                        class="btn-preview"
-                        type="button"
-                      >
-                        Preview
-                      </button>
-                    </div>
-                    <p class="help-text">Provide a URL to your establishment's logo for the report header</p>
-                    
-                    <div v-if="logoPreview" class="logo-preview">
-                      <img :src="reportConfig.establishmentLogoUrl" alt="Establishment Logo" @error="handleLogoError" />
-                      <img :src="vespaLogoUrl" alt="VESPA Logo" />
-                    </div>
-                  </div>
-                  
-                  <div class="color-scheme">
-                    <label>Primary Color (Optional)</label>
-                    <input 
-                      type="color"
-                      v-model="reportConfig.primaryColor"
-                      class="color-input"
-                    />
-                    <p class="help-text">Customize the primary color for charts and headings</p>
+                
+                <div v-if="reportConfig.hybridDimension" class="mt-3">
+                  <label>Select Items to Compare:</label>
+                  <div class="dual-select">
+                    <select v-model="reportConfig.hybridItem1" class="form-select">
+                      <option value="">Select...</option>
+                      <option v-for="item in (reportConfig.hybridDimension === 'year_group' ? availableYearGroups : availableGroups)" 
+                              :key="item" :value="item">
+                        {{ reportConfig.hybridDimension === 'year_group' ? 'Year ' + item : item }}
+                      </option>
+                    </select>
+                    <span class="vs-text">vs</span>
+                    <select v-model="reportConfig.hybridItem2" class="form-select">
+                      <option value="">Select...</option>
+                      <option v-for="item in (reportConfig.hybridDimension === 'year_group' ? availableYearGroups : availableGroups)" 
+                              :key="item" :value="item">
+                        {{ reportConfig.hybridDimension === 'year_group' ? 'Year ' + item : item }}
+                      </option>
+                    </select>
                   </div>
                 </div>
               </div>
-
-              <div class="viz-category">
-                <h5>Chart Types</h5>
-                <div class="chart-options">
-                  <label v-for="chart in chartTypes" :key="chart.id" class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.charts" :value="chart.id" />
-                    <span>{{ chart.label }}</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="viz-category">
-                <h5>Report Format</h5>
-                <div class="format-options">
-                  <label class="radio-label">
-                    <input type="radio" value="detailed" v-model="reportConfig.format" />
-                    <span>Detailed Report (All data & insights)</span>
-                  </label>
-                  <label class="radio-label">
-                    <input type="radio" value="executive" v-model="reportConfig.format" />
-                    <span>Executive Summary (Key findings only)</span>
-                  </label>
-                  <label class="radio-label">
-                    <input type="radio" value="ai_enhanced" v-model="reportConfig.format" />
-                    <span>AI-Enhanced Report (Context-aware insights)</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="viz-category">
-                <h5>Export Options</h5>
-                <div class="export-options">
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.includePDF" checked disabled />
-                    <span>PDF Report (Default)</span>
-                  </label>
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.includeExcel" />
-                    <span>Excel Data Export</span>
-                  </label>
-                  <label class="checkbox-label">
-                    <input type="checkbox" v-model="reportConfig.includePowerPoint" />
-                    <span>PowerPoint Presentation</span>
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
 
-          <!-- Step 6: Review & Generate -->
-          <div v-if="currentStep === 5" key="step6" class="step-panel">
-            <h4>Review Your Report Configuration</h4>
-            <p class="step-description">Confirm your selections before generating the report</p>
+          <!-- Step 3: Visualizations -->
+          <div v-if="currentStep === 2" class="visualization-step">
+            <h4>Select Report Components</h4>
+            <p class="info-text">VESPA charts and Radar chart are always included</p>
+            
+            <div class="visualization-options">
+              <label class="viz-option">
+                <input type="checkbox" v-model="reportConfig.includeDistributions">
+                <span class="viz-label">
+                  <span class="viz-icon">📊</span>
+                  Distribution Charts
+                  <span class="viz-desc">Score distribution histograms for each VESPA element</span>
+                </span>
+              </label>
+              
+              <label class="viz-option">
+                <input type="checkbox" v-model="reportConfig.includeTopBottom">
+                <span class="viz-label">
+                  <span class="viz-icon">🎯</span>
+                  Top/Bottom Questions
+                  <span class="viz-desc">Highest and lowest scoring questions</span>
+                </span>
+              </label>
+              
+              <label class="viz-option">
+                <input type="checkbox" v-model="reportConfig.includeInsights">
+                <span class="viz-label">
+                  <span class="viz-icon">💡</span>
+                  12 Psychometric Insights
+                  <span class="viz-desc">AI-analyzed questionnaire insights</span>
+                </span>
+              </label>
+              
+              <label class="viz-option">
+                <input type="checkbox" v-model="reportConfig.includeWordCloud">
+                <span class="viz-label">
+                  <span class="viz-icon">☁️</span>
+                  Word Cloud
+                  <span class="viz-desc">Student comment analysis visualization</span>
+                </span>
+              </label>
+              
+              <label class="viz-option">
+                <input type="checkbox" v-model="reportConfig.includeHeatmap">
+                <span class="viz-label">
+                  <span class="viz-icon">🔥</span>
+                  Question Heatmap
+                  <span class="viz-desc">Cycle comparison heatmap for all questions</span>
+                </span>
+              </label>
+            </div>
 
-            <div class="review-summary">
-              <div class="summary-section">
-                <h5>Report Type</h5>
-                <p>{{ getReportTypeLabel(reportConfig.type) }}</p>
-              </div>
-
-              <div class="summary-section">
-                <h5>Comparison Variables</h5>
-                <ul>
-                  <li v-for="variable in getSelectedVariables()" :key="variable">
-                    {{ variable }}
-                  </li>
-                </ul>
-              </div>
-
-              <div class="summary-section">
-                <h5>Selected Metrics</h5>
-                <ul>
-                  <li v-for="metric in getSelectedMetrics()" :key="metric">
-                    {{ metric }}
-                  </li>
-                </ul>
-              </div>
-
-              <div v-if="reportConfig.organizationalContext || reportConfig.specificQuestions" class="summary-section">
-                <h5>Organizational Context</h5>
-                <p v-if="reportConfig.organizationalContext" class="context-preview">
-                  {{ reportConfig.organizationalContext.substring(0, 150) }}{{ reportConfig.organizationalContext.length > 150 ? '...' : '' }}
-                </p>
-                <p v-if="reportConfig.specificQuestions" class="questions-count">
-                  <em>{{ reportConfig.specificQuestions.split('\n').filter(q => q.trim()).length }} specific questions for AI analysis</em>
-                </p>
-              </div>
-
-              <div class="summary-section">
-                <h5>Report Settings</h5>
-                <ul>
-                  <li>Format: {{ reportConfig.format === 'ai_enhanced' ? 'AI-Enhanced' : reportConfig.format }}</li>
-                  <li v-if="reportConfig.establishmentLogoUrl">Custom logo included</li>
-                  <li>Charts: {{ getSelectedCharts().join(', ') }}</li>
-                </ul>
-              </div>
-
-              <div class="estimated-time">
-                <svg class="time-icon" width="16" height="16" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"/>
-                </svg>
-                <span>Estimated generation time: {{ estimatedTime }} seconds</span>
-              </div>
+            <!-- Save Configuration Option -->
+            <div class="save-config-section">
+              <label class="save-option">
+                <input type="checkbox" v-model="saveConfiguration">
+                <span>Save this configuration for future use</span>
+              </label>
+              <input 
+                v-if="saveConfiguration" 
+                v-model="configurationName"
+                type="text" 
+                placeholder="Configuration name..."
+                class="form-input mt-2"
+              >
             </div>
           </div>
-        </transition>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="wizard-footer">
+          <button 
+            v-if="currentStep > 0"
+            @click="currentStep--"
+            class="btn-secondary"
+          >
+            Back
+          </button>
+          
+          <div class="spacer"></div>
+
+          <button 
+            v-if="currentStep < steps.length - 1"
+            @click="nextStep"
+            :disabled="!canProceed"
+            class="btn-primary"
+          >
+            Next
+          </button>
+
+          <button 
+            v-if="currentStep === steps.length - 1"
+            @click="generateReport"
+            :disabled="!canGenerate || generating"
+            class="btn-generate"
+          >
+            <span v-if="!generating">Generate Report</span>
+            <span v-else>
+              <span class="spinner"></span>
+              Generating...
+            </span>
+          </button>
+        </div>
       </div>
 
-      <!-- Navigation Buttons -->
-      <div class="wizard-footer">
-        <button 
-          v-if="currentStep > 0" 
-          @click="previousStep"
-          class="btn-secondary"
-        >
-          Previous
-        </button>
-        
-        <div class="spacer"></div>
-
-        <button 
-          v-if="currentStep < steps.length - 1"
-          @click="nextStep"
-          :disabled="!canProceed"
-          class="btn-primary"
-        >
-          Next
-        </button>
-
-        <button 
-          v-if="currentStep === steps.length - 1"
-          @click="generateReport"
-          :disabled="!canGenerate || generating"
-          class="btn-generate"
-        >
-          <span v-if="!generating">Generate Report</span>
-          <span v-else>
-            <span class="spinner"></span>
-            Generating...
-          </span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Generation Progress -->
-    <div v-if="generating" class="generation-overlay">
-      <div class="generation-modal">
-        <div class="generation-content">
-          <div class="spinner-large"></div>
-          <h3>Generating Your Report</h3>
-          <p>{{ generationStatus }}</p>
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: generationProgress + '%' }"></div>
+      <!-- Generation Progress -->
+      <div v-if="generating" class="generation-overlay">
+        <div class="generation-modal">
+          <div class="generation-content">
+            <div class="spinner-large"></div>
+            <h3>Generating Your Report</h3>
+            <p>{{ generationStatus }}</p>
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: generationProgress + '%' }"></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </Modal>
-  
-  <!-- Report Viewer Modal -->
-  <ReportViewer
-    v-if="showReportViewer"
-    :show="showReportViewer"
-    :html-content="generatedHtml"
-    :report-data="reportData"
-    :report-insights="reportInsights"
-    @close="closeReportViewer"
-    @exported="handleExported"
-  />
+    </Modal>
+    
+    <!-- Report Viewer Modal -->
+    <ReportViewer
+      v-if="showReportViewer"
+      :show="showReportViewer"
+      :html-content="generatedHtml"
+      :report-data="reportData"
+      :report-insights="reportInsights"
+      @close="closeReportViewer"
+      @exported="handleExported"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import Modal from '../common/Modal.vue'
 import ReportViewer from './ReportViewer.vue'
@@ -498,296 +350,201 @@ const generatedHtml = ref('')
 const reportData = ref({})
 const reportInsights = ref({})
 
-// Steps configuration
+// Configuration saving
+const saveConfiguration = ref(false)
+const configurationName = ref('')
+
+// Steps configuration (simplified to 3)
 const steps = [
   { id: 'type', label: 'Report Type' },
-  { id: 'variables', label: 'Variables' },
-  { id: 'metrics', label: 'Metrics' },
-  { id: 'context', label: 'Context' },
-  { id: 'visualization', label: 'Visualization' },
-  { id: 'review', label: 'Review' }
+  { id: 'configure', label: 'Configure' },
+  { id: 'visualize', label: 'Visualizations' }
 ]
 
 // Report configuration
 const reportConfig = ref({
   type: '',
-  cycles: [],
-  groupDimension: '',
-  groups: [],
-  benchmarkType: 'national',
-  benchmarkCycle: 1,
-  metrics: ['overall'],
-  includeERI: false,
-  includeQLA: false,
-  includeThemes: false,
-  includeStatistics: false,
-  includeEffectSize: false,
-  // Context fields
-  organizationalContext: '',
-  specificQuestions: '',
-  historicalContext: '',
-  // Branding fields
-  establishmentLogoUrl: '',
-  primaryColor: '#667eea',
-  // Visualization
-  charts: ['bar'],
-  format: 'detailed',
-  includePDF: true,
-  includeExcel: false,
-  includePowerPoint: false
+  // Cycle comparisons
+  cycle1: '',
+  cycle2: '',
+  cycle: '1',
+  // Year group comparisons
+  yearGroup1: '',
+  yearGroup2: '',
+  // Group comparisons
+  selectedGroups: [],
+  // Progress report
+  progressType: 'year_group',
+  progressGroup: '',
+  // Hybrid
+  hybridDimension: '',
+  hybridItem1: '',
+  hybridItem2: '',
+  // Visualizations
+  includeDistributions: true,
+  includeTopBottom: true,
+  includeInsights: true,
+  includeWordCloud: false,
+  includeHeatmap: true
 })
 
-// VESPA logo URL from the search results
-const vespaLogoUrl = ref('https://vespa.academy/_astro/vespalogo.BGrK1ARl.png')
-const logoPreview = ref(false)
-
-// Report types
+// Report types with better descriptions
 const reportTypes = [
   {
-    id: 'cycle_progression',
-    title: 'Cycle Progression Analysis',
-    description: 'Track changes in performance across multiple cycles',
-    icon: '📈',
-    examples: ['Cycle 1 vs Cycle 3', 'Term-on-term progress', 'Annual trends']
+    id: 'cycle_vs_cycle',
+    name: 'Cycle Comparison',
+    icon: '🔄',
+    description: 'Compare performance across 2 assessment cycles',
+    availability: 'available'
   },
   {
-    id: 'group_comparison',
-    title: 'Group Comparison',
-    description: 'Compare performance between different student groups',
+    id: 'year_group_vs_year_group',
+    name: 'Year Group Comparison',
+    icon: '📚',
+    description: 'Compare different year groups',
+    availability: 'available'
+  },
+  {
+    id: 'academic_year_vs_academic_year',
+    name: 'Academic Year Comparison',
+    icon: '📅',
+    description: 'Compare across academic years',
+    availability: 'future'
+  },
+  {
+    id: 'group_vs_group',
+    name: 'Group Comparison',
     icon: '👥',
-    examples: ['Year groups', 'Gender analysis', 'Faculty comparison']
+    description: 'Compare up to 4 groups within a single cycle',
+    availability: 'available'
   },
   {
-    id: 'benchmark',
-    title: 'Benchmark Analysis',
-    description: 'Compare your school against external benchmarks',
-    icon: '🎯',
-    examples: ['School vs National', 'Trust comparison', 'Similar schools']
+    id: 'progress',
+    name: 'Progress Report',
+    icon: '📈',
+    description: 'Track one group\'s journey over 3 cycles',
+    availability: 'available'
   },
   {
-    id: 'custom',
-    title: 'Custom Report',
-    description: 'Build a tailored comparison with multiple variables',
-    icon: '⚙️',
-    examples: ['Multi-dimensional analysis', 'Complex filters', 'Custom metrics']
+    id: 'hybrid',
+    name: 'Hybrid Analysis',
+    icon: '🔀',
+    description: 'Cycle comparison with additional dimension',
+    availability: 'available'
   }
 ]
 
-// VESPA metrics
-const vespaMetrics = [
-  { id: 'overall', label: 'Overall Score' },
-  { id: 'vision', label: 'Vision' },
-  { id: 'effort', label: 'Effort' },
-  { id: 'systems', label: 'Systems' },
-  { id: 'practice', label: 'Practice' },
-  { id: 'attitude', label: 'Attitude' }
-]
+// Available data (populated from store)
+const availableYearGroups = ref([])
+const availableGroups = ref([])
+const hasCycle3Data = ref(false)
 
-// Chart types
-const chartTypes = [
-  { id: 'bar', label: 'Bar Chart' },
-  { id: 'line', label: 'Line Graph' },
-  { id: 'radar', label: 'Radar Chart' },
-  { id: 'heatmap', label: 'Heat Map' },
-  { id: 'box', label: 'Box Plot' }
-]
+// Load available options from store
+onMounted(async () => {
+  console.log('[ComparativeReportModal] Component mounted')
+  
+  // Get available year groups from store
+  if (store.yearGroups && store.yearGroups.length > 0) {
+    availableYearGroups.value = store.yearGroups
+    console.log('[ComparativeReportModal] Year groups from store:', availableYearGroups.value)
+  } else {
+    // Try to fetch year groups if not in store
+    try {
+      const response = await API.getYearGroups(store.selectedEstablishment?.id)
+      if (response && response.data) {
+        availableYearGroups.value = response.data
+        console.log('[ComparativeReportModal] Year groups fetched:', availableYearGroups.value)
+      }
+    } catch (error) {
+      console.error('[ComparativeReportModal] Failed to fetch year groups:', error)
+    }
+  }
+  
+  // Get available groups
+  try {
+    const groupsResponse = await API.getGroups(store.selectedEstablishment?.id)
+    if (groupsResponse && groupsResponse.data) {
+      availableGroups.value = groupsResponse.data
+      console.log('[ComparativeReportModal] Groups fetched:', availableGroups.value)
+    }
+  } catch (error) {
+    console.error('[ComparativeReportModal] Failed to load groups:', error)
+    // Use some default groups if API fails
+    availableGroups.value = ['Group A', 'Group B', 'Group C']
+  }
+  
+  // Check if Cycle 3 data exists - for now assume it doesn't unless we have evidence
+  // TODO: Check actual data to determine if Cycle 3 exists
+  hasCycle3Data.value = false
+})
 
 // Computed properties
 const canProceed = computed(() => {
-  switch (currentStep.value) {
-    case 0:
-      return reportConfig.value.type !== ''
-    case 1:
-      if (reportConfig.value.type === 'cycle_progression') {
-        return reportConfig.value.cycles.length >= 2
-      }
-      if (reportConfig.value.type === 'group_comparison') {
-        return reportConfig.value.groupDimension && reportConfig.value.groups.length >= 2
-      }
-      return true
-    case 2:
-      return reportConfig.value.metrics.length > 0
-    case 3:
-      return reportConfig.value.charts.length > 0
-    default:
-      return true
+  if (currentStep.value === 0) {
+    return reportConfig.value.type !== '' && 
+           reportTypes.find(t => t.id === reportConfig.value.type)?.availability === 'available'
   }
+  
+  if (currentStep.value === 1) {
+    switch (reportConfig.value.type) {
+      case 'cycle_vs_cycle':
+        return reportConfig.value.cycle1 && reportConfig.value.cycle2 && 
+               reportConfig.value.cycle1 !== reportConfig.value.cycle2
+      case 'year_group_vs_year_group':
+        return reportConfig.value.yearGroup1 && reportConfig.value.yearGroup2 && 
+               reportConfig.value.yearGroup1 !== reportConfig.value.yearGroup2
+      case 'group_vs_group':
+        return reportConfig.value.selectedGroups.length >= 2 && 
+               reportConfig.value.selectedGroups.length <= 4
+      case 'progress':
+        return reportConfig.value.progressGroup !== ''
+      case 'hybrid':
+        return reportConfig.value.cycle1 && reportConfig.value.cycle2 && 
+               reportConfig.value.cycle1 !== reportConfig.value.cycle2 &&
+               reportConfig.value.hybridItem1 && reportConfig.value.hybridItem2 &&
+               reportConfig.value.hybridItem1 !== reportConfig.value.hybridItem2
+      default:
+        return false
+    }
+  }
+  
+  return true
 })
 
 const canGenerate = computed(() => {
-  return canProceed.value && currentStep.value === steps.length - 1
-})
-
-const estimatedTime = computed(() => {
-  let time = 10 // Base time
-  time += reportConfig.value.metrics.length * 2
-  time += reportConfig.value.charts.length * 3
-  if (reportConfig.value.includeStatistics) time += 5
-  if (reportConfig.value.includeThemes) time += 8
-  return time
-})
-
-const variableStepTitle = computed(() => {
-  switch (reportConfig.value.type) {
-    case 'cycle_progression':
-      return 'Select Cycles to Compare'
-    case 'group_comparison':
-      return 'Select Groups to Compare'
-    case 'benchmark':
-      return 'Configure Benchmark Settings'
-    case 'custom':
-      return 'Build Custom Comparison'
-    default:
-      return 'Select Variables'
-  }
-})
-
-const variableStepDescription = computed(() => {
-  switch (reportConfig.value.type) {
-    case 'cycle_progression':
-      return 'Choose which assessment cycles to include in your comparison'
-    case 'group_comparison':
-      return 'Select the dimension and specific groups to compare'
-    case 'benchmark':
-      return 'Configure how to benchmark your school\'s performance'
-    case 'custom':
-      return 'Create a custom comparison with multiple variables'
-    default:
-      return 'Configure your comparison variables'
-  }
-})
-
-// Mock data for available groups (would come from API)
-const availableGroups = computed(() => {
-  if (reportConfig.value.groupDimension === 'year_group') {
-    return [
-      { value: '7', label: 'Year 7', count: 150 },
-      { value: '8', label: 'Year 8', count: 142 },
-      { value: '9', label: 'Year 9', count: 138 },
-      { value: '10', label: 'Year 10', count: 145 },
-      { value: '11', label: 'Year 11', count: 140 }
-    ]
-  }
-  if (reportConfig.value.groupDimension === 'gender') {
-    return [
-      { value: 'M', label: 'Male', count: 380 },
-      { value: 'F', label: 'Female', count: 335 }
-    ]
-  }
-  // Add more group options based on dimension
-  return []
+  return canProceed.value
 })
 
 // Methods
 const selectReportType = (type) => {
-  reportConfig.value.type = type
+  const reportType = reportTypes.find(t => t.id === type)
+  if (reportType?.availability === 'available') {
+    reportConfig.value.type = type
+    console.log('[ComparativeReportModal] Selected report type:', type)
+  }
 }
 
 const nextStep = () => {
-  if (canProceed.value && currentStep.value < steps.length - 1) {
+  if (canProceed.value) {
     currentStep.value++
+    console.log('[ComparativeReportModal] Moving to step:', currentStep.value)
   }
-}
-
-const previousStep = () => {
-  if (currentStep.value > 0) {
-    currentStep.value--
-  }
-}
-
-const previewLogo = () => {
-  logoPreview.value = true
-}
-
-const handleLogoError = () => {
-  logoPreview.value = false
-  alert('Unable to load logo. Please check the URL and ensure it\'s publicly accessible.')
 }
 
 const handleClose = () => {
-  // Reset wizard
   currentStep.value = 0
-  logoPreview.value = false
-  reportConfig.value = {
-    type: '',
-    cycles: [],
-    groupDimension: '',
-    groups: [],
-    benchmarkType: 'national',
-    benchmarkCycle: 1,
-    metrics: ['overall'],
-    includeERI: false,
-    includeQLA: false,
-    includeThemes: false,
-    includeStatistics: false,
-    includeEffectSize: false,
-    // Context fields
-    organizationalContext: '',
-    specificQuestions: '',
-    historicalContext: '',
-    // Branding fields
-    establishmentLogoUrl: '',
-    primaryColor: '#667eea',
-    // Visualization
-    charts: ['bar'],
-    format: 'detailed',
-    includePDF: true,
-    includeExcel: false,
-    includePowerPoint: false
-  }
+  reportConfig.value.type = ''
   emit('close')
-}
-
-const getReportTypeLabel = (type) => {
-  const reportType = reportTypes.find(t => t.id === type)
-  return reportType ? reportType.title : type
-}
-
-const getSelectedVariables = () => {
-  const variables = []
-  if (reportConfig.value.type === 'cycle_progression') {
-    variables.push(`Cycles: ${reportConfig.value.cycles.join(', ')}`)
-  }
-  if (reportConfig.value.type === 'group_comparison') {
-    variables.push(`Dimension: ${reportConfig.value.groupDimension}`)
-    variables.push(`Groups: ${reportConfig.value.groups.join(', ')}`)
-  }
-  if (reportConfig.value.type === 'benchmark') {
-    variables.push(`Benchmark: ${reportConfig.value.benchmarkType}`)
-    variables.push(`Cycle: ${reportConfig.value.benchmarkCycle}`)
-  }
-  return variables
-}
-
-const getSelectedMetrics = () => {
-  const metrics = reportConfig.value.metrics.map(m => {
-    const metric = vespaMetrics.find(vm => vm.id === m)
-    return metric ? metric.label : m
-  })
-  if (reportConfig.value.includeERI) metrics.push('ERI Score')
-  if (reportConfig.value.includeQLA) metrics.push('Question Analysis')
-  if (reportConfig.value.includeThemes) metrics.push('Comment Themes')
-  if (reportConfig.value.includeStatistics) metrics.push('Statistical Tests')
-  return metrics
-}
-
-const getSelectedCharts = () => {
-  return reportConfig.value.charts.map(c => {
-    const chart = chartTypes.find(ct => ct.id === c)
-    return chart ? chart.label : c
-  })
 }
 
 const closeReportViewer = () => {
   showReportViewer.value = false
-  // Reset wizard to start
   currentStep.value = 0
   handleClose()
 }
 
 const handleExported = (exportInfo) => {
-  console.log('Report exported:', exportInfo)
-  // Could emit an event or show a notification here
+  console.log('[ComparativeReportModal] Report exported:', exportInfo)
 }
 
 const generateReport = async () => {
@@ -798,49 +555,62 @@ const generateReport = async () => {
   try {
     // Update progress
     generationProgress.value = 20
-    generationStatus.value = 'Fetching comparison data...'
+    generationStatus.value = 'Preparing data...'
 
-    // Prepare request data
+    // Prepare request data based on report type
     const requestData = {
       establishmentId: store.selectedEstablishment?.id,
       establishmentName: store.selectedEstablishment?.name || 'Unknown School',
       reportType: reportConfig.value.type,
-      config: reportConfig.value,
-      filters: store.filters
+      config: {
+        ...reportConfig.value,
+        establishmentLogoUrl: '', // Can be added later
+        primaryColor: '#667eea'
+      },
+      filters: store.filters,
+      // Include current dashboard data to avoid re-fetching
+      currentData: {
+        statistics: store.statistics,
+        qlaData: store.qlaData,
+        yearGroups: store.yearGroups
+      }
     }
+
+    console.log('[ComparativeReportModal] Sending report request:', requestData)
 
     // Call API
     generationProgress.value = 40
-    generationStatus.value = 'Analyzing data and generating insights...'
+    generationStatus.value = 'Generating report...'
 
     const response = await API.generateComparativeReport(requestData)
     
-    console.log('[ComparativeReportModal] Backend response:', response)
-    console.log('[ComparativeReportModal] Response data:', response.data)
-    console.log('[ComparativeReportModal] HTML length:', response.data?.html?.length || 0)
-    console.log('[ComparativeReportModal] HTML preview:', response.data?.html?.substring(0, 500))
+    console.log('[ComparativeReportModal] API Response received:', response)
 
     generationProgress.value = 80
-    generationStatus.value = 'Preparing downloadable files...'
+    generationStatus.value = 'Finalizing...'
 
-    // Handle response (show in modal)
+    // Handle response
     if (response.data && response.data.success) {
       generationProgress.value = 100
-      generationStatus.value = 'Opening report editor...'
+      generationStatus.value = 'Opening report viewer...'
 
       // Store the generated content
-      generatedHtml.value = response.data.html || '<!DOCTYPE html><html><body><h1>Error: No HTML content received</h1></body></html>'
+      generatedHtml.value = response.data.html || '<!DOCTYPE html><html><body><h1>Report Generated</h1></body></html>'
       reportData.value = response.data.data || {}
       reportInsights.value = response.data.insights || {}
       
-      console.log('[ComparativeReportModal] Stored HTML:', generatedHtml.value.substring(0, 500))
-      console.log('[ComparativeReportModal] Report data:', reportData.value)
-      console.log('[ComparativeReportModal] Insights:', reportInsights.value)
+      console.log('[ComparativeReportModal] Report content stored, HTML length:', generatedHtml.value.length)
+
+      // Save configuration if requested
+      if (saveConfiguration.value && configurationName.value) {
+        saveReportConfiguration()
+      }
 
       // Hide generation overlay and show report viewer
       setTimeout(() => {
         generating.value = false
         showReportViewer.value = true
+        console.log('[ComparativeReportModal] Showing report viewer')
       }, 500)
 
       // Emit success event
@@ -851,11 +621,10 @@ const generateReport = async () => {
         insights: response.data.insights
       })
     } else {
-      console.error('[ComparativeReportModal] Invalid response format:', response)
       throw new Error('Invalid response format')
     }
   } catch (error) {
-    console.error('Failed to generate report:', error)
+    console.error('[ComparativeReportModal] Failed to generate report:', error)
     generationStatus.value = 'Failed to generate report. Please try again.'
     generationProgress.value = 0
     
@@ -863,6 +632,18 @@ const generateReport = async () => {
       generating.value = false
     }, 3000)
   }
+}
+
+const saveReportConfiguration = () => {
+  // Save to localStorage for now, could be saved to backend later
+  const savedConfigs = JSON.parse(localStorage.getItem('reportConfigurations') || '[]')
+  savedConfigs.push({
+    name: configurationName.value,
+    config: { ...reportConfig.value },
+    timestamp: new Date().toISOString()
+  })
+  localStorage.setItem('reportConfigurations', JSON.stringify(savedConfigs))
+  console.log('[ComparativeReportModal] Configuration saved:', configurationName.value)
 }
 </script>
 
@@ -891,10 +672,6 @@ const generateReport = async () => {
   font-weight: 600;
 }
 
-.badge-icon {
-  flex-shrink: 0;
-}
-
 .wizard-container {
   display: flex;
   flex-direction: column;
@@ -903,7 +680,7 @@ const generateReport = async () => {
 
 .progress-steps {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   padding: 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.02);
@@ -914,9 +691,8 @@ const generateReport = async () => {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  flex: 1;
-  position: relative;
-  opacity: 0.5;
+  cursor: pointer;
+  opacity: 0.6;
   transition: opacity 0.3s;
 }
 
@@ -925,157 +701,119 @@ const generateReport = async () => {
   opacity: 1;
 }
 
-.step:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  width: 100%;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.step.completed:not(:last-child)::after {
-  background: #60a5fa;
-}
-
 .step-number {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  z-index: 1;
+  transition: all 0.3s;
 }
 
 .step.active .step-number {
-  background: #60a5fa;
-  border-color: #60a5fa;
-  color: #0f0f23;
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
 }
 
 .step.completed .step-number {
-  background: #34d399;
-  border-color: #34d399;
+  background: #10b981;
+  border-color: #10b981;
   color: white;
 }
 
 .step-label {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.step.active .step-label,
-.step.completed .step-label {
-  color: white;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .step-content {
   flex: 1;
-  overflow-y: auto;
   padding: 2rem;
+  overflow-y: auto;
 }
 
-.step-panel h4 {
-  margin: 0 0 0.5rem 0;
-  color: white;
-  font-size: 1.25rem;
-}
-
-.step-description {
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 2rem;
-}
-
-/* Report Type Cards */
-.report-types {
+/* Report Type Selection */
+.report-type-grid {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
+  margin-top: 1rem;
 }
 
 .report-type-card {
+  padding: 1.5rem;
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.3s;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1rem;
-  align-items: start;
+  position: relative;
 }
 
 .report-type-card:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(96, 165, 250, 0.5);
+  border-color: rgba(102, 126, 234, 0.5);
 }
 
 .report-type-card.selected {
-  background: rgba(96, 165, 250, 0.1);
-  border-color: #60a5fa;
+  background: rgba(102, 126, 234, 0.15);
+  border-color: #667eea;
 }
 
 .type-icon {
   font-size: 2rem;
+  margin-bottom: 0.5rem;
 }
 
-.type-content h5 {
-  margin: 0 0 0.5rem 0;
+.report-type-card h5 {
+  margin: 0.5rem 0;
   color: white;
 }
 
-.type-content p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-}
-
-.type-examples {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.75rem;
-  border-radius: 8px;
+.report-type-card p {
   font-size: 0.85rem;
-}
-
-.example-label {
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 600;
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.type-examples ul {
-  margin: 0;
-  padding-left: 1.25rem;
   color: rgba(255, 255, 255, 0.7);
+  margin: 0;
 }
 
-/* Variable Selection */
-.variable-selection {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.selection-group {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.selection-group label {
-  font-weight: 600;
+.coming-soon-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: #f59e0b;
   color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 
-.form-select {
+/* Configuration Step */
+.config-section {
+  margin-top: 1rem;
+}
+
+.config-group {
+  margin-bottom: 1.5rem;
+}
+
+.config-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.form-select,
+.form-input {
+  width: 100%;
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   color: white;
@@ -1083,288 +821,115 @@ const generateReport = async () => {
 }
 
 .form-select option {
-  background: #1a202c;
+  background: #2a3c7a;
+  color: white;
 }
 
-.cycle-checkboxes,
-.group-selection,
-.benchmark-options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.checkbox-label,
-.radio-label {
+.dual-select {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
+  gap: 1rem;
 }
 
-.checkbox-label:hover,
-.radio-label:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(96, 165, 250, 0.5);
+.vs-text {
+  color: #667eea;
+  font-weight: 600;
+  font-size: 1.2rem;
 }
 
-.checkbox-label input[type="checkbox"],
-.radio-label input[type="radio"] {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-}
-
-.checkbox-label span,
-.radio-label span {
-  color: white;
-  flex: 1;
-}
-
-.count {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
-}
-
-.help-text {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
-  margin: 0;
-}
-
-/* Metrics Selection */
-.metrics-selection {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.metric-category h5 {
-  margin: 0 0 1rem 0;
-  color: #60a5fa;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.metric-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.75rem;
-}
-
-/* Visualization Options */
-.viz-options {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.viz-category h5 {
-  margin: 0 0 1rem 0;
-  color: #60a5fa;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.chart-options {
+.checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.75rem;
-}
-
-.format-options,
-.export-options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-/* Context Section */
-.context-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.context-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.context-group label {
-  font-weight: 600;
-  color: white;
-}
-
-.context-textarea {
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: white;
-  font-size: 0.95rem;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 100px;
-}
-
-.context-textarea:focus {
-  outline: none;
-  border-color: #60a5fa;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.form-input {
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: white;
-  font-size: 1rem;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #60a5fa;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* Branding Section */
-.branding-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.logo-upload-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.logo-input-group {
-  display: flex;
   gap: 0.5rem;
-}
-
-.logo-input-group .form-input {
-  flex: 1;
-}
-
-.btn-preview {
-  padding: 0.75rem 1rem;
-  background: rgba(96, 165, 250, 0.2);
-  border: 1px solid #60a5fa;
-  border-radius: 8px;
-  color: #60a5fa;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-preview:hover {
-  background: rgba(96, 165, 250, 0.3);
-}
-
-.logo-preview {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  padding: 1rem;
-  background: white;
-  border-radius: 8px;
   margin-top: 0.5rem;
 }
 
-.logo-preview img {
-  max-height: 60px;
-  max-width: 200px;
-  object-fit: contain;
-}
-
-.color-scheme {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.color-input {
-  width: 100px;
-  height: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* Review Summary */
-.review-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.context-preview {
-  color: rgba(255, 255, 255, 0.8);
-  font-style: italic;
-  line-height: 1.5;
-}
-
-.questions-count {
-  color: #60a5fa;
-  font-size: 0.9rem;
-}
-
-.summary-section {
-  background: rgba(255, 255, 255, 0.03);
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.summary-section h5 {
-  margin: 0 0 0.5rem 0;
-  color: #60a5fa;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.summary-section p,
-.summary-section ul {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.summary-section ul {
-  padding-left: 1.25rem;
-}
-
-.estimated-time {
+.checkbox-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem;
-  background: rgba(96, 165, 250, 0.1);
-  border: 1px solid rgba(96, 165, 250, 0.3);
-  border-radius: 8px;
-  color: #60a5fa;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.time-icon {
-  flex-shrink: 0;
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+/* Visualization Step */
+.visualization-options {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.viz-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.viz-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.viz-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.viz-icon {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.viz-desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 2rem;
+}
+
+.info-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.save-config-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.save-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
 }
 
 /* Footer */
 .wizard-footer {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -1375,16 +940,28 @@ const generateReport = async () => {
   flex: 1;
 }
 
-.btn-secondary,
 .btn-primary,
+.btn-secondary,
 .btn-generate {
   padding: 0.75rem 1.5rem;
+  border: none;
   border-radius: 8px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  border: none;
-  font-size: 1rem;
+}
+
+.btn-primary,
+.btn-generate {
+  background: #667eea;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled),
+.btn-generate:hover:not(:disabled) {
+  background: #5a67d8;
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -1396,32 +973,7 @@ const generateReport = async () => {
   background: rgba(255, 255, 255, 0.15);
 }
 
-.btn-primary {
-  background: #60a5fa;
-  color: #0f0f23;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #3b82f6;
-  transform: translateY(-1px);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-generate {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  min-width: 150px;
-}
-
-.btn-generate:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
+.btn-primary:disabled,
 .btn-generate:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -1438,79 +990,62 @@ const generateReport = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 1000;
 }
 
 .generation-modal {
-  background: #1a202c;
+  background: #2a3c7a;
   border-radius: 12px;
-  padding: 2rem;
-  max-width: 400px;
-  width: 90%;
+  padding: 3rem;
   text-align: center;
+  max-width: 400px;
 }
 
 .generation-content h3 {
-  margin: 1rem 0 0.5rem 0;
   color: white;
+  margin-bottom: 1rem;
 }
 
 .generation-content p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0 0 1.5rem 0;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1.5rem;
 }
 
+.spinner,
 .spinner-large {
-  width: 60px;
-  height: 60px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #60a5fa;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
-}
-
-.spinner {
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
+.spinner-large {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 1.5rem;
+}
+
 .progress-bar {
-  height: 6px;
+  width: 100%;
+  height: 8px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #60a5fa, #667eea);
-  border-radius: 3px;
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transition: width 0.3s;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Transitions */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-fade-enter-from {
-  transform: translateX(20px);
-  opacity: 0;
-}
-
-.slide-fade-leave-to {
-  transform: translateX(-20px);
-  opacity: 0;
-}
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
 </style>
