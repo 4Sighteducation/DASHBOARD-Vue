@@ -1,6 +1,7 @@
 <template>
-  <div v-if="show" class="report-viewer-overlay">
-    <div class="report-viewer-container">
+  <teleport to="body">
+    <div v-if="show" class="report-viewer-overlay">
+      <div class="report-viewer-container">
       <!-- Header with controls -->
       <div class="viewer-header">
         <h3>Interactive Report Editor</h3>

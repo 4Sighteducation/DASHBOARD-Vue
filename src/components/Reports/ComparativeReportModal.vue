@@ -443,32 +443,30 @@ const hasCycle3Data = ref(false)
 onMounted(async () => {
   console.log('[ComparativeReportModal] Component mounted')
   
-  // Get available year groups from store
-  if (store.yearGroups && store.yearGroups.length > 0) {
-    availableYearGroups.value = store.yearGroups
-    console.log('[ComparativeReportModal] Year groups from store:', availableYearGroups.value)
-  } else {
-    // Try to fetch year groups if not in store
-    try {
-      const response = await API.getYearGroups(store.selectedEstablishment?.id)
-      const years = Array.isArray(response) ? response : (response?.data || [])
-      availableYearGroups.value = years
-      console.log('[ComparativeReportModal] Year groups fetched:', availableYearGroups.value)
-    } catch (error) {
-      console.error('[ComparativeReportModal] Failed to fetch year groups:', error)
-    }
+  // Get establishment ID
+  const establishmentId = store.selectedEstablishment || store.staffAdminEstablishmentId
+  console.log('[ComparativeReportModal] Using establishment ID:', establishmentId)
+  
+  // Load year groups
+  try {
+    const response = await API.getYearGroups(establishmentId)
+    const years = Array.isArray(response) ? response : (response?.data || [])
+    availableYearGroups.value = years
+    console.log('[ComparativeReportModal] Year groups fetched:', availableYearGroups.value)
+  } catch (error) {
+    console.error('[ComparativeReportModal] Failed to fetch year groups:', error)
+    availableYearGroups.value = []
   }
   
-  // Get available groups
+  // Load groups
   try {
-    const groupsResponse = await API.getGroups(store.selectedEstablishment?.id)
+    const groupsResponse = await API.getGroups(establishmentId)
     const groups = Array.isArray(groupsResponse) ? groupsResponse : (groupsResponse?.data || [])
     availableGroups.value = groups
     console.log('[ComparativeReportModal] Groups fetched:', availableGroups.value)
   } catch (error) {
     console.error('[ComparativeReportModal] Failed to load groups:', error)
-    // Use some default groups if API fails
-    availableGroups.value = ['Group A', 'Group B', 'Group C']
+    availableGroups.value = []
   }
   
   // Check if Cycle 3 data exists - for now assume it doesn't unless we have evidence
@@ -556,21 +554,37 @@ const generateReport = async () => {
     generationStatus.value = 'Preparing data...'
 
     // Prepare request data based on report type
+      // Get establishment info - selectedEstablishment is the ID itself, not an object
+  const establishmentId = store.selectedEstablishment || store.staffAdminEstablishmentId
+  
+  // Get establishment name from the store's loaded data
+  const establishmentName = store.statistics?.establishment_name || 
+                           store.staffData?.establishment_name || 
+                           'Unknown School'
+  
+  console.log('[ComparativeReportModal] Establishment info:', {
+    establishmentId,
+    establishmentName,
+    selectedEstablishment: store.selectedEstablishment,
+    staffAdminEstablishmentId: store.staffAdminEstablishmentId,
+    statistics: store.statistics
+  })
+  
     const requestData = {
-      establishmentId: store.selectedEstablishment?.id,
-      establishmentName: store.selectedEstablishment?.name || 'Unknown School',
-      reportType: reportConfig.value.type,
-      config: {
-        ...reportConfig.value,
-        establishmentLogoUrl: '', // Can be added later
-        primaryColor: '#667eea'
-      },
-      filters: store.filters,
-      // Include current dashboard data to avoid re-fetching
-      currentData: {
-        statistics: store.statistics,
-        qlaData: store.qlaData,
-        yearGroups: store.yearGroups
+    establishmentId,
+    establishmentName,
+    reportType: reportConfig.value.type,
+    config: {
+      ...reportConfig.value,
+      establishmentLogoUrl: '', // Can be added later
+      primaryColor: '#667eea'
+    },
+        filters: store.filters,
+    data: {
+      statistics: store.dashboardData?.statistics || {},
+      qlaData: store.dashboardData?.qlaData || {},
+      wordCloudData: store.dashboardData?.wordCloudData || {},
+      commentInsights: store.dashboardData?.commentInsights || {}
       }
     }
 
