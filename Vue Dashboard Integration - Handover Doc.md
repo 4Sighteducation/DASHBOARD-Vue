@@ -1060,5 +1060,193 @@ Files Modified:
 Outstanding Issues
 ------------------
 - ❌ Comment Insights/Word Cloud section not implemented
-- ❌ Export functionality not implemented
+- ❌ Export functionality not implemented (except new Comparative Reports)
 - ⚠️ Some schools may need data verification for historical years
+
+Recent Updates (January 2025 - Session 13 - Comparative Reports Feature)
+========================================================================
+
+42. Comparative Reports Feature Implementation
+----------------------------------------------
+Implemented a comprehensive report generation system for Super Users to create professional, branded comparative analysis reports with AI insights.
+
+### Feature Overview:
+- **Access**: Super Users only (monetization feature)
+- **Purpose**: Generate detailed comparative reports between year groups, cycles, or both
+- **Output**: Professional PDF reports with charts, insights, and recommendations
+
+### Frontend Implementation:
+
+#### New Components Created:
+1. **ComparativeReportModal.vue** - 5-step wizard interface:
+   - Step 1: Report Type Selection (Temporal/Cohort/Custom)
+   - Step 2: Variable Selection (Year groups, cycles, date ranges)
+   - Step 3: Metrics Selection (VESPA scores, QLA, specific questions)
+   - Step 4: Context & Narrative (organizational context, specific questions, historical context)
+   - Step 5: Visualization & Branding (charts, logo URL, primary color)
+
+2. **ComparativeReportVisualizations.vue** - Chart components for reports:
+   - Heat maps for comparative data
+   - Trend lines for temporal analysis
+   - Spider/radar charts for VESPA comparisons
+   - Question difference cards
+   - Distribution charts
+
+3. **DashboardHeader.vue** - Modified to add "Comparative Report" button:
+   ```vue
+   <button v-if="isSuperUser" @click="showComparativeReport = true" class="btn btn-primary">
+     <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+     </svg>
+     Comparative Report
+   </button>
+   ```
+
+#### API Service Updates:
+Added `generateComparativeReport` method to api.js:
+```javascript
+async generateComparativeReport(reportConfig) {
+  const response = await apiClient.post(
+    `${this.getBaseUrl()}/api/comparative-report`,
+    reportConfig,
+    {
+      responseType: 'blob', // Important for PDF download
+      timeout: 60000 // 60 seconds for report generation
+    }
+  )
+  return response
+}
+```
+
+### Backend Infrastructure:
+
+#### Database Setup (Supabase):
+1. **Materialized View**: `comparative_metrics`
+   - Pre-calculated comparative data for fast queries
+   - Joins vespa_scores, students, establishments
+   - Includes LAG functions for previous cycle comparisons
+
+2. **Cache Table**: `comparison_cache`
+   - Stores statistical results (mean, std dev, Cohen's d)
+   - Caches AI-generated insights
+
+3. **SQL Functions**: `calculate_comparison`
+   - Performs statistical calculations
+   - Supports cycle_vs_cycle and group_vs_group comparisons
+
+4. **RPC Function**: `refresh_materialized_view`
+   - Created to fix silent failures in sync script
+   - Ensures materialized view stays current
+
+#### Backend Endpoints (Flask):
+- `/api/comparative-report` - Main endpoint for report generation
+- Integrates with OpenAI API for executive summaries
+- Uses ReportLab for PDF generation
+
+### Interactive Report Mockup:
+Created `comparative_report_mockup.html` - fully interactive prototype featuring:
+
+#### 12 Fixed Questionnaire Insights:
+1. Support Readiness (61.8%)
+2. Academic Momentum (59.7%)
+3. Growth Mindset (54.5%)
+4. Resilience (53.7%)
+5. Time Management (50.7%)
+6. Stress Management (50.3%)
+7. Revision Readiness (44.4%)
+8. Academic Confidence (42.0%)
+9. Organization Skills (41.4%)
+10. Exam Confidence (40.3%)
+11. Study Effectiveness (31.5%)
+12. Active Learning (24.3%)
+
+#### Mockup Features:
+- Editable text sections
+- Toggle controls for each section
+- Cycle/Year comparison filters
+- VESPA themed colors (Vision #e59437, Effort #86b4f0, Systems #72cb44, Practice #7f31a4, Attitude #f032e6, Overall #667eea)
+- Word Cloud using wordcloud2.js
+- Collapsible control panel
+- Professional styling
+
+### Critical Fixes Implemented:
+
+1. **Rochdale Sixth Form College Data Issue**:
+   - Problem: School not appearing in comparative_metrics view
+   - Root Cause: Materialized view not refreshing after sync
+   - Solution: Created refresh_materialized_view RPC function
+   - Fixed silent failure in sync_knack_to_supabase.py
+
+2. **Import Statement Fix**:
+   - Problem: Build error "default" is not exported by api.js
+   - Solution: Changed `import API from` to `import { API } from`
+
+### Report Configuration Options:
+```javascript
+const reportConfig = {
+  reportType: 'temporal' | 'cohort' | 'custom',
+  establishmentId: string,
+  // Comparison parameters
+  comparisonType: 'cycle_vs_cycle' | 'year_vs_year' | 'group_vs_group',
+  group1: { cycle?, yearGroup?, dateRange? },
+  group2: { cycle?, yearGroup?, dateRange? },
+  // Metrics
+  metrics: ['vespa_overall', 'vespa_components', 'qla_top_bottom', ...],
+  // Context fields (NEW)
+  organizationalContext: string,
+  specificQuestions: string,
+  historicalContext: string,
+  // Branding fields (NEW)
+  establishmentLogoUrl: string,
+  primaryColor: string,
+  // Visualizations
+  charts: ['heatMap', 'trendLine', 'spiderChart', ...]
+}
+```
+
+### AI Integration:
+- Dynamic prompt adaptation based on comparison type
+- Contextual analysis using provided organizational context
+- Statistical significance reporting (Cohen's d, p-values)
+- Neutral, analytical language (avoiding judgmental statements)
+
+### Key Features for Production:
+1. **Real Data Integration**: All mockup placeholders will pull from actual dashboard data
+2. **Dynamic AI Insights**: Based on actual VESPA scores and QLA responses
+3. **Professional Branding**: Custom logos and colors per establishment
+4. **Export Options**: PDF generation with all charts and insights
+5. **Super User Only**: Restricted access for monetization
+
+### Files Created/Modified:
+Frontend:
+- DASHBOARD-Vue/src/components/Reports/ComparativeReportModal.vue (NEW)
+- DASHBOARD-Vue/src/components/Reports/ComparativeReportVisualizations.vue (NEW)
+- DASHBOARD-Vue/src/components/DashboardHeader.vue (MODIFIED)
+- DASHBOARD-Vue/src/services/api.js (MODIFIED)
+- comparative_report_mockup.html (NEW - testing prototype)
+
+Backend/Database:
+- prepare_comparative_analytics.sql
+- create_refresh_function.sql
+- enhanced_comparative_endpoint_with_qla.py (planning document)
+- create_comparative_report_endpoint.py (planning document)
+
+Utility Scripts:
+- check_rochdale_sixth_form.py
+- refresh_comparative_view.py
+- fix_sync_refresh.py
+
+### Deployment Notes:
+1. Frontend requires `npm run build` after changes
+2. Import statement must use named export: `import { API } from`
+3. Materialized view must be refreshed after data syncs
+4. Report generation may take 30-60 seconds for large datasets
+
+### Next Steps for Comparative Reports:
+1. ✅ Frontend components created and tested
+2. ⚠️ Backend endpoint needs integration into main app.py
+3. ⚠️ PDF generation logic needs implementation
+4. ⚠️ OpenAI integration for executive summaries
+5. ✅ Mockup created for user testing
+
+Outstanding Issues

@@ -506,8 +506,8 @@ export const API = {
         `${this.getBaseUrl()}/api/comparative-report`,
         reportConfig,
         {
-          responseType: 'blob', // Important for PDF download
           timeout: 60000 // 60 seconds for report generation
+          // Note: No longer using responseType: 'blob' as we now get JSON with HTML
         }
       )
       
@@ -517,42 +517,60 @@ export const API = {
       console.error('[API] Error generating comparative report:', error)
       
       if (import.meta.env.DEV) {
-        console.warn('Using mock PDF for development')
-        // Create a mock PDF blob for development
-        const mockPdfContent = `%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /MediaBox [0 0 612 792] /Contents 4 0 R >>
-endobj
-4 0 obj
-<< /Length 44 >>
-stream
-BT
-/F1 24 Tf
-100 700 Td
-(Mock Comparative Report) Tj
-ET
-endstream
-endobj
-xref
-0 5
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000274 00000 n 
-trailer
-<< /Size 5 /Root 1 0 R >>
-startxref
-365
-%%EOF`
-        const blob = new Blob([mockPdfContent], { type: 'application/pdf' })
-        return { data: blob }
+        console.warn('Using mock HTML report for development')
+        // Return mock HTML response for development
+        return { 
+          data: {
+            success: true,
+            html: `<!DOCTYPE html>
+<html>
+<head>
+  <title>Mock Comparative Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .editable { border: 1px dashed #ccc; padding: 5px; }
+    .editable:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h1 class="editable" contenteditable="true">Mock Comparative Report</h1>
+  <p class="editable" contenteditable="true">This is a mock report for development. All text is editable.</p>
+  <button onclick="alert('Export to PDF')">Export to PDF</button>
+</body>
+</html>`,
+            data: { mock: true },
+            insights: { summary: 'Mock insights' }
+          }
+        }
+      }
+      
+      throw error
+    }
+  },
+
+  async exportComparativeReportPDF(exportConfig) {
+    console.log('[API] exportComparativeReportPDF called with config:', exportConfig)
+    
+    try {
+      const response = await apiClient.post(
+        `${this.getBaseUrl()}/api/comparative-report/export-pdf`,
+        exportConfig,
+        {
+          responseType: 'blob', // Important for PDF download
+          timeout: 30000 // 30 seconds for PDF export
+        }
+      )
+      
+      console.log('[API] PDF export successful')
+      return response
+    } catch (error) {
+      console.error('[API] Error exporting PDF:', error)
+      
+      if (import.meta.env.DEV) {
+        console.warn('Using mock PDF export for development')
+        // Create a simple mock PDF
+        const mockPdfContent = new Blob(['Mock PDF content'], { type: 'application/pdf' })
+        return { data: mockPdfContent }
       }
       
       throw error

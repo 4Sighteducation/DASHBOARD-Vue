@@ -1,6 +1,8 @@
 <template>
-  <Modal v-if="show" @close="handleClose" class="comparative-report-modal">
-    <template #header>
+  <div>
+    <!-- Main wizard modal -->
+    <Modal v-if="show && !showReportViewer" @close="handleClose" class="comparative-report-modal">
+      <template #header>
       <div class="modal-header-content">
         <h3>Generate Comparative Report</h3>
         <span class="super-user-badge">
@@ -452,12 +454,25 @@
       </div>
     </div>
   </Modal>
+  
+  <!-- Report Viewer Modal -->
+  <ReportViewer
+    v-if="showReportViewer"
+    :show="showReportViewer"
+    :html-content="generatedHtml"
+    :report-data="reportData"
+    :report-insights="reportInsights"
+    @close="closeReportViewer"
+    @exported="handleExported"
+  />
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import Modal from '../common/Modal.vue'
+import ReportViewer from './ReportViewer.vue'
 import { API } from '../../services/api'
 
 const props = defineProps({
@@ -476,6 +491,12 @@ const currentStep = ref(0)
 const generating = ref(false)
 const generationStatus = ref('')
 const generationProgress = ref(0)
+
+// Report viewer state
+const showReportViewer = ref(false)
+const generatedHtml = ref('')
+const reportData = ref({})
+const reportInsights = ref({})
 
 // Steps configuration
 const steps = [
@@ -757,6 +778,18 @@ const getSelectedCharts = () => {
   })
 }
 
+const closeReportViewer = () => {
+  showReportViewer.value = false
+  // Reset wizard to start
+  currentStep.value = 0
+  handleClose()
+}
+
+const handleExported = (exportInfo) => {
+  console.log('Report exported:', exportInfo)
+  // Could emit an event or show a notification here
+}
+
 const generateReport = async () => {
   generating.value = true
   generationProgress.value = 0
@@ -785,31 +818,31 @@ const generateReport = async () => {
     generationProgress.value = 80
     generationStatus.value = 'Preparing downloadable files...'
 
-    // Handle response (download PDF)
-    if (response.data) {
+    // Handle response (show in modal)
+    if (response.data && response.data.success) {
       generationProgress.value = 100
-      generationStatus.value = 'Report generated successfully!'
+      generationStatus.value = 'Opening report editor...'
 
-      // Download the PDF
-      const blob = new Blob([response.data], { type: 'application/pdf' })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `Comparative_Report_${store.selectedEstablishment?.name}_${new Date().toISOString().split('T')[0]}.pdf`
-      link.click()
-      window.URL.revokeObjectURL(url)
+      // Store the generated content
+      generatedHtml.value = response.data.html
+      reportData.value = response.data.data || {}
+      reportInsights.value = response.data.insights || {}
+
+      // Hide generation overlay and show report viewer
+      setTimeout(() => {
+        generating.value = false
+        showReportViewer.value = true
+      }, 500)
 
       // Emit success event
       emit('report-generated', { 
         type: reportConfig.value.type,
-        timestamp: new Date()
+        timestamp: new Date(),
+        data: response.data.data,
+        insights: response.data.insights
       })
-
-      // Close modal after short delay
-      setTimeout(() => {
-        generating.value = false
-        handleClose()
-      }, 1500)
+    } else {
+      throw new Error('Invalid response format')
     }
   } catch (error) {
     console.error('Failed to generate report:', error)
