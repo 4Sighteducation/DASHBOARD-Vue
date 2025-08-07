@@ -70,17 +70,25 @@ const statusText = ref('Report loaded - Edit any text by clicking on it')
 
 // Watch for content changes
 watch(() => props.htmlContent, async (newContent) => {
+  console.log('[ReportViewer] HTML content changed, length:', newContent?.length || 0)
+  console.log('[ReportViewer] HTML preview:', newContent?.substring(0, 500))
+  
   if (newContent && reportFrame.value) {
     await nextTick()
     // Content will be loaded via srcdoc
   }
-})
+}, { immediate: true })
 
 const onFrameLoad = () => {
+  console.log('[ReportViewer] iframe loaded')
+  
   // Add any additional functionality to the iframe content
   if (reportFrame.value && reportFrame.value.contentWindow) {
     const frameWindow = reportFrame.value.contentWindow
     const frameDocument = reportFrame.value.contentDocument
+    
+    console.log('[ReportViewer] Frame document:', frameDocument)
+    console.log('[ReportViewer] Frame body innerHTML length:', frameDocument?.body?.innerHTML?.length || 0)
     
     // Store data in the frame for reference
     frameWindow.reportData = props.reportData
@@ -92,11 +100,15 @@ const onFrameLoad = () => {
     
     // Add event listeners for changes
     const editables = frameDocument.querySelectorAll('[contenteditable="true"]')
+    console.log('[ReportViewer] Found editable elements:', editables.length)
+    
     editables.forEach(el => {
       el.addEventListener('input', () => {
         statusText.value = 'Content edited - Changes will be included in export'
       })
     })
+  } else {
+    console.error('[ReportViewer] No frame reference or contentWindow available')
   }
 }
 

@@ -814,6 +814,11 @@ const generateReport = async () => {
     generationStatus.value = 'Analyzing data and generating insights...'
 
     const response = await API.generateComparativeReport(requestData)
+    
+    console.log('[ComparativeReportModal] Backend response:', response)
+    console.log('[ComparativeReportModal] Response data:', response.data)
+    console.log('[ComparativeReportModal] HTML length:', response.data?.html?.length || 0)
+    console.log('[ComparativeReportModal] HTML preview:', response.data?.html?.substring(0, 500))
 
     generationProgress.value = 80
     generationStatus.value = 'Preparing downloadable files...'
@@ -824,9 +829,13 @@ const generateReport = async () => {
       generationStatus.value = 'Opening report editor...'
 
       // Store the generated content
-      generatedHtml.value = response.data.html
+      generatedHtml.value = response.data.html || '<!DOCTYPE html><html><body><h1>Error: No HTML content received</h1></body></html>'
       reportData.value = response.data.data || {}
       reportInsights.value = response.data.insights || {}
+      
+      console.log('[ComparativeReportModal] Stored HTML:', generatedHtml.value.substring(0, 500))
+      console.log('[ComparativeReportModal] Report data:', reportData.value)
+      console.log('[ComparativeReportModal] Insights:', reportInsights.value)
 
       // Hide generation overlay and show report viewer
       setTimeout(() => {
@@ -842,6 +851,7 @@ const generateReport = async () => {
         insights: response.data.insights
       })
     } else {
+      console.error('[ComparativeReportModal] Invalid response format:', response)
       throw new Error('Invalid response format')
     }
   } catch (error) {
