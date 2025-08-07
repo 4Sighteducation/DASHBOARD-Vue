@@ -451,10 +451,9 @@ onMounted(async () => {
     // Try to fetch year groups if not in store
     try {
       const response = await API.getYearGroups(store.selectedEstablishment?.id)
-      if (response && response.data) {
-        availableYearGroups.value = response.data
-        console.log('[ComparativeReportModal] Year groups fetched:', availableYearGroups.value)
-      }
+      const years = Array.isArray(response) ? response : (response?.data || [])
+      availableYearGroups.value = years
+      console.log('[ComparativeReportModal] Year groups fetched:', availableYearGroups.value)
     } catch (error) {
       console.error('[ComparativeReportModal] Failed to fetch year groups:', error)
     }
@@ -463,10 +462,9 @@ onMounted(async () => {
   // Get available groups
   try {
     const groupsResponse = await API.getGroups(store.selectedEstablishment?.id)
-    if (groupsResponse && groupsResponse.data) {
-      availableGroups.value = groupsResponse.data
-      console.log('[ComparativeReportModal] Groups fetched:', availableGroups.value)
-    }
+    const groups = Array.isArray(groupsResponse) ? groupsResponse : (groupsResponse?.data || [])
+    availableGroups.value = groups
+    console.log('[ComparativeReportModal] Groups fetched:', availableGroups.value)
   } catch (error) {
     console.error('[ComparativeReportModal] Failed to load groups:', error)
     // Use some default groups if API fails
