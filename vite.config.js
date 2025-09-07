@@ -17,7 +17,7 @@ export default defineConfig({
     // Library mode for single-file output
     lib: {
       entry: resolve(__dirname, 'src/main.js'),
-      name: 'VueDashboard',
+      name: 'pboard',
       formats: ['iife'] // Immediately invoked function for Knack
     },
     rollupOptions: {
@@ -25,12 +25,12 @@ export default defineConfig({
       external: [],
       output: {
         // JS output
-                  entryFileNames: 'vuedash4q.js',
+                  entryFileNames: 'vuedash4r.js',
         
         // CSS output - extracted to separate file
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {
-            return 'vuedash4q.css'
+            return 'vuedash4r.css'
           }
           return '[name][extname]'
         },

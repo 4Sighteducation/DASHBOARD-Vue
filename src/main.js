@@ -32,8 +32,14 @@ window.initializeVueDashboard = function() {
   
   // Check if app already exists and unmount it
   if (window.__vueDashboardApp) {
-    console.log('Vue Dashboard: Unmounting existing app')
-    window.__vueDashboardApp.unmount()
+    console.log('Vue Dashboard: Found existing app, checking if it can be unmounted...')
+    if (typeof window.__vueDashboardApp.unmount === 'function') {
+      console.log('Vue Dashboard: Unmounting existing app')
+      window.__vueDashboardApp.unmount()
+    } else {
+      console.warn('Vue Dashboard: Existing app does not have unmount method, clearing reference')
+      window.__vueDashboardApp = null
+    }
   }
   
   // Check if container exists
