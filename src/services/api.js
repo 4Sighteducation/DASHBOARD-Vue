@@ -270,11 +270,22 @@ export const API = {
   async getStatistics(establishmentId, filters = {}) {
     try {
       console.log('[API] getStatistics called with filters:', filters)
+      
+      // Build params with proper filter names for backend
+      const params = {
+        establishment_id: establishmentId
+      }
+      
+      // Add filters with correct naming for backend
+      if (filters.cycle) params.cycle = filters.cycle
+      if (filters.academicYear) params.academic_year = filters.academicYear
+      if (filters.yearGroup) params.yearGroup = filters.yearGroup
+      if (filters.group) params.group = filters.group
+      if (filters.faculty) params.faculty = filters.faculty
+      if (filters.studentId) params.studentId = filters.studentId
+      
       const response = await apiClient.get(`${this.getBaseUrl()}/api/statistics`, {
-        params: {
-          establishment_id: establishmentId,
-          ...filters
-        }
+        params
       })
       console.log('[API] getStatistics response:', response.data)
       console.log('[API] National ERI from response:', response.data.nationalERI)
@@ -294,11 +305,22 @@ export const API = {
     try {
       const url = `${this.getBaseUrl()}/api/qla`
       console.log('[API] QLA URL:', url)
+      
+      // Build params with proper filter names for backend
+      const params = {
+        establishment_id: establishmentId
+      }
+      
+      // Add filters with correct naming for backend
+      if (filters.cycle) params.cycle = filters.cycle
+      if (filters.academicYear) params.academic_year = filters.academicYear
+      if (filters.yearGroup) params.yearGroup = filters.yearGroup
+      if (filters.group) params.group = filters.group
+      if (filters.faculty) params.faculty = filters.faculty
+      if (filters.studentId) params.studentId = filters.studentId
+      
       const response = await apiClient.get(url, {
-        params: {
-          establishment_id: establishmentId,
-          ...filters
-        }
+        params
       })
       console.log('[API] getQLAData response:', response.data)
       return response.data

@@ -23,6 +23,7 @@ export const useDashboardStore = defineStore('dashboard', {
     
     // Filters
     filters: {
+      academicYear: null,  // Will be set to current year on init
       yearGroup: 'all',
       group: 'all',
       faculty: 'all',
