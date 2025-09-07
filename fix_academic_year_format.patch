@@ -1,0 +1,55 @@
+// Fix 1: Update getCurrentAcademicYear in dashboard store
+// File: DASHBOARD-Vue/src/stores/dashboard.js
+// Lines 266-277
+
+getCurrentAcademicYear() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1 // 1-12
+  
+  // Academic year starts in August
+  // Changed to use full year format (2025/2026) instead of short format (2025-26)
+  if (month >= 8) {
+    return `${year}/${year + 1}`
+  } else {
+    return `${year - 1}/${year}`
+  }
+}
+
+// Fix 2: Update mock data in API service
+// File: DASHBOARD-Vue/src/services/api.js
+// Line 59
+
+const MOCK_DATA = {
+  academicYears: ['2025/2026', '2024/2025', '2023/2024', '2022/2023', '2021/2022'],
+  // ... rest of mock data
+}
+
+// Fix 3: Add format conversion function to handle both formats
+// File: DASHBOARD-Vue/src/utils/formatters.js (new file)
+
+export function normalizeAcademicYear(year) {
+  if (!year) return null
+  
+  // Handle both formats: 2025-26 and 2025/2026
+  if (year.includes('-')) {
+    // Convert 2025-26 to 2025/2026
+    const [startYear, shortEndYear] = year.split('-')
+    const endYear = startYear.slice(0, 2) + shortEndYear
+    return `${startYear}/${endYear}`
+  }
+  
+  return year // Already in correct format
+}
+
+export function displayAcademicYear(year) {
+  if (!year) return ''
+  
+  // Always display in user-friendly format (2025/26)
+  if (year.includes('/')) {
+    const [start, end] = year.split('/')
+    return `${start}/${end.slice(-2)}`
+  }
+  
+  return year
+}
