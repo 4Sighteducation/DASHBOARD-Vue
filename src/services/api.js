@@ -334,18 +334,18 @@ export const API = {
           bottomQuestions: []
         },
         insights: [
-          { id: 'growth_mindset', title: 'Growth Mindset', percentageAgreement: 0, questionIds: ['Q5', 'Q26'], icon: '🌱', totalResponses: 0 },
-          { id: 'academic_momentum', title: 'Academic Momentum', percentageAgreement: 0, questionIds: ['Q14', 'Q16', 'Q17', 'Q9'], icon: '🚀', totalResponses: 0 },
-          { id: 'study_effectiveness', title: 'Study Effectiveness', percentageAgreement: 0, questionIds: ['Q7', 'Q12', 'Q15'], icon: '📚', totalResponses: 0 },
-          { id: 'exam_confidence', title: 'Exam Confidence', percentageAgreement: 0, questionIds: ['OUTCOME_Q_CONFIDENT'], icon: '🎯', totalResponses: 0 },
-          { id: 'organization_skills', title: 'Organization Skills', percentageAgreement: 0, questionIds: ['Q2', 'Q22', 'Q11'], icon: '📋', totalResponses: 0 },
-          { id: 'resilience_factor', title: 'Resilience', percentageAgreement: 0, questionIds: ['Q13', 'Q8', 'Q27'], icon: '💪', totalResponses: 0 },
-          { id: 'stress_management', title: 'Stress Management', percentageAgreement: 0, questionIds: ['Q20', 'Q28'], icon: '😌', totalResponses: 0 },
-          { id: 'active_learning', title: 'Active Learning', percentageAgreement: 0, questionIds: ['Q7', 'Q23', 'Q19'], icon: '🎓', totalResponses: 0 },
-          { id: 'support_readiness', title: 'Support Readiness', percentageAgreement: 0, questionIds: ['OUTCOME_Q_SUPPORT'], icon: '🤝', totalResponses: 0 },
-          { id: 'time_management', title: 'Time Management', percentageAgreement: 0, questionIds: ['Q2', 'Q4', 'Q11'], icon: '⏰', totalResponses: 0 },
-          { id: 'academic_confidence', title: 'Academic Confidence', percentageAgreement: 0, questionIds: ['Q10', 'Q8'], icon: '⭐', totalResponses: 0 },
-          { id: 'revision_readiness', title: 'Revision Ready', percentageAgreement: 0, questionIds: ['OUTCOME_Q_EQUIPPED'], icon: '📖', totalResponses: 0 }
+          { id: 'growth_mindset', title: 'Growth Mindset', percentageAgreement: 0, questionIds: ['q5', 'q26', 'q27', 'q16'], icon: '🌱', totalResponses: 0 },
+          { id: 'academic_momentum', title: 'Academic Momentum', percentageAgreement: 0, questionIds: ['q14', 'q16', 'q17', 'q9'], icon: '🚀', totalResponses: 0 },
+          { id: 'vision_purpose', title: 'Vision & Purpose', percentageAgreement: 0, questionIds: ['q1', 'q3', 'q29'], icon: '🎯', totalResponses: 0 },
+          { id: 'study_strategies', title: 'Study Strategies', percentageAgreement: 0, questionIds: ['q7', 'q12', 'q15', 'q18'], icon: '📚', totalResponses: 0 },
+          { id: 'exam_confidence', title: 'Exam Confidence', percentageAgreement: 0, questionIds: ['outcome_q_confident', 'q10', 'q28'], icon: '⭐', totalResponses: 0 },
+          { id: 'organization_materials', title: 'Organization & Materials', percentageAgreement: 0, questionIds: ['q22', 'q18', 'q25'], icon: '📦', totalResponses: 0 },
+          { id: 'resilience_factor', title: 'Resilience Factor', percentageAgreement: 0, questionIds: ['q13', 'q27', 'q8'], icon: '💪', totalResponses: 0 },
+          { id: 'stress_management', title: 'Stress Management', percentageAgreement: 0, questionIds: ['q20', 'q28', 'q24'], icon: '😌', totalResponses: 0 },
+          { id: 'support_help_seeking', title: 'Support & Help-Seeking', percentageAgreement: 0, questionIds: ['outcome_q_support', 'q24', 'q27'], icon: '🤝', totalResponses: 0 },
+          { id: 'time_management', title: 'Time Management', percentageAgreement: 0, questionIds: ['q2', 'q4', 'q11'], icon: '⏰', totalResponses: 0 },
+          { id: 'active_learning', title: 'Active Learning', percentageAgreement: 0, questionIds: ['q23', 'q19', 'q7'], icon: '🎓', totalResponses: 0 },
+          { id: 'revision_readiness', title: 'Revision Readiness', percentageAgreement: 0, questionIds: ['outcome_q_equipped', 'q7', 'q12', 'q18'], icon: '📖', totalResponses: 0 }
         ]
       }
     }
