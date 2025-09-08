@@ -137,7 +137,7 @@ const insightDetails = {
     description: 'Engagement with active learning techniques that deepen understanding and retention.',
     importance: 'Active learning techniques are proven to be more effective than passive studying.',
     questions: {
-      'Q7': 'I test myself on important topics until I remember them',
+      'q7': 'I test myself on important topics until I remember them',
       'q23': 'When preparing for a test/exam I teach someone else the material',
       'q19': 'When revising I mix different kinds of topics/subjects in one study session'
     }
@@ -153,9 +153,9 @@ const insightDetails = {
     description: 'Students\' ability to effectively plan and use their time for academic work.',
     importance: 'Good time management reduces stress, improves work quality, and enables better work-life balance.',
     questions: {
-      'Q2': 'I plan and organise my time to get my work done',
-      'q4': 'I complete all my homework on time',
-      'Q11': 'I always meet deadlines'
+      'q2': 'I complete all my homework on time',
+      'q4': 'I start my work promptly rather than procrastinating',
+      'q11': 'I plan and organise my time to get my work done'
     }
   },
   academic_confidence: {
