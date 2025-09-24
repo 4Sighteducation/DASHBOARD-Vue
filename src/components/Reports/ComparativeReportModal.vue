@@ -663,17 +663,31 @@ const generateReport = async () => {
       // Get establishment info - selectedEstablishment is the ID itself, not an object
   const establishmentId = store.selectedEstablishment || store.staffAdminEstablishmentId
   
-  // Get establishment name from the store's loaded data
-  const establishmentName = store.statistics?.establishment_name || 
-                           store.staffData?.establishment_name || 
-                           'Unknown School'
+  // Get establishment name from the store's loaded data or schools list
+  let establishmentName = store.statistics?.establishment_name || 
+                         store.staffData?.establishment_name
+  
+  // If still no name, try to find it in the schools list
+  if (!establishmentName && store.schools && establishmentId) {
+    const school = store.schools.find(s => s.id === establishmentId || s.establishment_id === establishmentId)
+    establishmentName = school?.name || school?.establishment_name || 'Unknown School'
+  }
+  
+  // Last resort - use dashboardData
+  if (!establishmentName || establishmentName === 'Unknown School') {
+    establishmentName = store.dashboardData?.statistics?.establishment_name || 
+                       store.dashboardData?.establishmentName ||
+                       'Unknown School'
+  }
   
   console.log('[ComparativeReportModal] Establishment info:', {
     establishmentId,
     establishmentName,
     selectedEstablishment: store.selectedEstablishment,
     staffAdminEstablishmentId: store.staffAdminEstablishmentId,
-    statistics: store.statistics
+    statistics: store.statistics,
+    dashboardData: store.dashboardData,
+    schools: store.schools?.length
   })
   
     const requestData = {
@@ -685,14 +699,21 @@ const generateReport = async () => {
       establishmentLogoUrl: '', // Can be added later
       primaryColor: '#667eea'
     },
-        filters: store.filters,
+    filters: store.filters,
     data: {
       statistics: store.dashboardData?.statistics || {},
       qlaData: store.dashboardData?.qlaData || {},
       wordCloudData: store.dashboardData?.wordCloudData || {},
-      commentInsights: store.dashboardData?.commentInsights || {}
-      }
+      commentInsights: store.dashboardData?.commentInsights || {},
+      // Add more detailed data
+      vespaScores: store.dashboardData?.statistics?.vespaScores || {},
+      comparison: store.dashboardData?.statistics?.comparison || {},
+      yearGroups: store.yearGroups || [],
+      groups: store.groups || [],
+      totalResponses: store.dashboardData?.statistics?.totalResponses || 0,
+      totalStudents: store.dashboardData?.statistics?.totalStudents || 0
     }
+  }
 
     console.log('[ComparativeReportModal] Sending report request:', requestData)
 
