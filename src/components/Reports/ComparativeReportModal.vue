@@ -75,6 +75,12 @@
                     <option value="3" v-if="hasCycle3Data">Cycle 3</option>
                   </select>
                 </div>
+                
+                <label class="mt-3">Academic Year (Optional):</label>
+                <select v-model="reportConfig.academicYear" class="form-select">
+                  <option value="">Current Year</option>
+                  <option v-for="year in availableAcademicYears" :key="year" :value="year">{{ year }}</option>
+                </select>
               </div>
 
               <!-- Year Group vs Year Group -->
@@ -91,6 +97,41 @@
                     <option v-for="yg in availableYearGroups" :key="yg" :value="yg">Year {{ yg }}</option>
                   </select>
                 </div>
+                
+                <label class="mt-3">Academic Year (Optional):</label>
+                <select v-model="reportConfig.academicYear" class="form-select">
+                  <option value="">Current Year</option>
+                  <option v-for="year in availableAcademicYears" :key="year" :value="year">{{ year }}</option>
+                </select>
+              </div>
+              
+              <!-- Academic Year vs Academic Year -->
+              <div v-if="reportConfig.type === 'academic_year_vs_academic_year'" class="config-group">
+                <label>Select Two Academic Years to Compare:</label>
+                <div class="dual-select">
+                  <select v-model="reportConfig.academicYear1" class="form-select">
+                    <option value="">Select First Year</option>
+                    <option v-for="year in availableAcademicYears" :key="year" :value="year">{{ year }}</option>
+                  </select>
+                  <span class="vs-text">vs</span>
+                  <select v-model="reportConfig.academicYear2" class="form-select">
+                    <option value="">Select Second Year</option>
+                    <option v-for="year in availableAcademicYears" :key="year" :value="year">{{ year }}</option>
+                  </select>
+                </div>
+                
+                <label class="mt-3">Year Group (Optional - leave blank for all):</label>
+                <select v-model="reportConfig.yearGroup1" class="form-select">
+                  <option value="">All Year Groups</option>
+                  <option v-for="yg in availableYearGroups" :key="yg" :value="yg">Year {{ yg }}</option>
+                </select>
+                
+                <label class="mt-3">Cycle to Compare:</label>
+                <select v-model="reportConfig.cycle" class="form-select">
+                  <option value="1">Cycle 1</option>
+                  <option value="2">Cycle 2</option>
+                  <option value="3" v-if="hasCycle3Data">Cycle 3</option>
+                </select>
               </div>
 
               <!-- Group vs Group -->
@@ -413,11 +454,19 @@ const reportConfig = ref({
   // Year group comparisons
   yearGroup1: '',
   yearGroup2: '',
+  // Academic year comparisons
+  academicYear: '2024/2025',  // Current academic year
+  academicYear1: '2024/2025',
+  academicYear2: '2023/2024',
   // Group comparisons
   selectedGroups: [],
   // Progress report
   progressType: 'year_group',
   progressGroup: '',
+  // Cohort tracking
+  startingYearGroup: '',
+  startingAcademicYear: '2023/2024',
+  yearsToTrack: 2,
   // Hybrid
   hybridDimension: '',
   hybridItem1: '',
@@ -455,7 +504,7 @@ const reportTypes = [
     name: 'Academic Year Comparison',
     icon: '📅',
     description: 'Compare across academic years',
-    availability: 'future'
+    availability: 'available'  // Changed from 'future'
   },
   {
     id: 'group_vs_group',
@@ -483,6 +532,14 @@ const reportTypes = [
 // Available data (populated from store)
 const availableYearGroups = ref([])
 const availableGroups = ref([])
+const availableAcademicYears = ref([
+  '2025/2026',
+  '2024/2025',
+  '2023/2024',
+  '2022/2023',
+  '2021/2022',
+  '2020/2021'
+])
 const hasCycle3Data = ref(false)
 
 // Load available options from store
@@ -535,6 +592,9 @@ const canProceed = computed(() => {
       case 'year_group_vs_year_group':
         return reportConfig.value.yearGroup1 && reportConfig.value.yearGroup2 && 
                reportConfig.value.yearGroup1 !== reportConfig.value.yearGroup2
+      case 'academic_year_vs_academic_year':
+        return reportConfig.value.academicYear1 && reportConfig.value.academicYear2 && 
+               reportConfig.value.academicYear1 !== reportConfig.value.academicYear2
       case 'group_vs_group':
         return reportConfig.value.selectedGroups.length >= 2 && 
                reportConfig.value.selectedGroups.length <= 4
