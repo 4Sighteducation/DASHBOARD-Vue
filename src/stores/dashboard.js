@@ -270,10 +270,11 @@ export const useDashboardStore = defineStore('dashboard', {
       const month = now.getMonth() + 1 // 1-12
       
       // Academic year starts in August
+      // CRITICAL: Format must match database format (YYYY/YYYY with slash and full years)
       if (month >= 8) {
-        return `${year}-${(year + 1).toString().slice(-2)}`
+        return `${year}/${year + 1}`  // e.g., "2025/2026"
       } else {
-        return `${year - 1}-${year.toString().slice(-2)}`
+        return `${year - 1}/${year}`  // e.g., "2024/2025"
       }
     },
 
