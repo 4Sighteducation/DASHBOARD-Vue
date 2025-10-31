@@ -42,7 +42,11 @@ export default defineConfig({
     // Extract CSS to separate file
     cssCodeSplit: false,
     // Minify for production
-    minify: true,
+    minify: 'esbuild',
+    // Remove console logs in production using esbuild
+    esbuild: {
+      drop: ['console', 'debugger']
+    },
     // Generate sourcemaps for debugging
     sourcemap: true
   },
