@@ -597,6 +597,24 @@ export const API = {
       
       throw error
     }
+  },
+
+  async refreshEstablishmentData(establishmentId) {
+    console.log('[API] Refreshing establishment data:', establishmentId)
+    
+    try {
+      const response = await apiClient.post(
+        `${this.getBaseUrl()}/api/sync/refresh-establishment`,
+        { establishmentId },
+        { timeout: 310000 } // 5 min 10 sec timeout
+      )
+      
+      console.log('[API] Refresh response:', response.data)
+      return response.data
+    } catch (error) {
+      console.error('[API] Error refreshing establishment data:', error)
+      throw error
+    }
   }
 }
 
@@ -613,5 +631,6 @@ export const {
   getCommentInsights,
   getEstablishmentName,
   getStudentResponses,
-  generateComparativeReport
+  generateComparativeReport,
+  refreshEstablishmentData
 } = API

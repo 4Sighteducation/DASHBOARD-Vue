@@ -22,6 +22,7 @@
         :is-super-user="isSuperUser"
         :selected-establishment="selectedEstablishment"
         @establishment-change="handleEstablishmentChange"
+        @data-refreshed="handleDataRefreshed"
       />
 
       <!-- Tab Navigation -->
@@ -168,6 +169,12 @@ function handleEstablishmentSelect(establishment) {
   showSuperUserModal.value = false
   store.selectEstablishment(establishment.id)
   loadDashboardData()
+}
+
+async function handleDataRefreshed() {
+  // When refresh button is clicked, reload dashboard data
+  console.log('[App] Data refreshed, reloading dashboard...')
+  await loadDashboardData()
 }
 
 async function handleFilterChange(filterType, value) {
