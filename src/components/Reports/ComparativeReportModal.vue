@@ -105,6 +105,72 @@
                 </select>
               </div>
               
+              <!-- Faculty vs Faculty -->
+              <div v-if="reportConfig.type === 'faculty_vs_faculty'" class="config-group">
+                <label>Select Two Faculties to Compare:</label>
+                <div class="dual-select">
+                  <select v-model="reportConfig.faculty1" class="form-select">
+                    <option value="">Select Faculty</option>
+                    <option v-for="fac in availableFaculties" :key="fac" :value="fac">{{ fac }}</option>
+                  </select>
+                  <span class="vs-text">vs</span>
+                  <select v-model="reportConfig.faculty2" class="form-select">
+                    <option value="">Select Faculty</option>
+                    <option v-for="fac in availableFaculties" :key="fac" :value="fac">{{ fac }}</option>
+                  </select>
+                </div>
+                
+                <label class="mt-3">Cycle:</label>
+                <select v-model="reportConfig.cycle" class="form-select">
+                  <option value="1">Cycle 1</option>
+                  <option value="2">Cycle 2</option>
+                  <option value="3" v-if="hasCycle3Data">Cycle 3</option>
+                </select>
+                
+                <label class="mt-3">Academic Year (Optional):</label>
+                <select v-model="reportConfig.academicYear" class="form-select">
+                  <option value="">Current Year</option>
+                  <option v-for="year in availableAcademicYears" :key="year" :value="year">{{ year }}</option>
+                </select>
+              </div>
+              
+              <!-- Faculty Progression -->
+              <div v-if="reportConfig.type === 'faculty_progression'" class="config-group">
+                <label>Select Faculty to Track:</label>
+                <select v-model="reportConfig.faculty" class="form-select">
+                  <option value="">Select Faculty</option>
+                  <option v-for="fac in availableFaculties" :key="fac" :value="fac">{{ fac }}</option>
+                </select>
+                
+                <label class="mt-3">Academic Years to Track:</label>
+                <div class="checkbox-grid">
+                  <label v-for="year in availableAcademicYears" :key="year" class="checkbox-item">
+                    <input 
+                      type="checkbox" 
+                      :value="year"
+                      v-model="reportConfig.academicYears"
+                    >
+                    {{ year }}
+                  </label>
+                </div>
+                
+                <label class="mt-3">Cycles to Include:</label>
+                <div class="checkbox-grid">
+                  <label class="checkbox-item">
+                    <input type="checkbox" value="1" v-model="reportConfig.cycles">
+                    Cycle 1
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" value="2" v-model="reportConfig.cycles">
+                    Cycle 2
+                  </label>
+                  <label class="checkbox-item" v-if="hasCycle3Data">
+                    <input type="checkbox" value="3" v-model="reportConfig.cycles">
+                    Cycle 3
+                  </label>
+                </div>
+              </div>
+              
               <!-- Academic Year vs Academic Year -->
               <div v-if="reportConfig.type === 'academic_year_vs_academic_year'" class="config-group">
                 <label>Select Two Academic Years to Compare:</label>
@@ -454,10 +520,16 @@ const reportConfig = ref({
   // Year group comparisons
   yearGroup1: '',
   yearGroup2: '',
+  // Faculty comparisons
+  faculty: '',
+  faculty1: '',
+  faculty2: '',
+  cycles: ['1', '2'],  // For progression reports
   // Academic year comparisons
   academicYear: '2024/2025',  // Current academic year
   academicYear1: '2024/2025',
   academicYear2: '2023/2024',
+  academicYears: ['2024/2025'],  // For progression reports
   // Group comparisons
   selectedGroups: [],
   // Progress report
@@ -500,6 +572,20 @@ const reportTypes = [
     availability: 'available'
   },
   {
+    id: 'faculty_vs_faculty',
+    name: 'Faculty Comparison',
+    icon: '🏛️',
+    description: 'Compare different faculties/departments',
+    availability: 'available'
+  },
+  {
+    id: 'faculty_progression',
+    name: 'Faculty Progression',
+    icon: '📊',
+    description: 'Track faculty progress over time',
+    availability: 'available'
+  },
+  {
     id: 'academic_year_vs_academic_year',
     name: 'Academic Year Comparison',
     icon: '📅',
@@ -532,6 +618,7 @@ const reportTypes = [
 // Available data (populated from store)
 const availableYearGroups = ref([])
 const availableGroups = ref([])
+const availableFaculties = ref([])
 const availableAcademicYears = ref([
   '2025/2026',
   '2024/2025',
@@ -572,6 +659,27 @@ onMounted(async () => {
     availableGroups.value = []
   }
   
+  // Load faculties
+  try {
+    const facultiesResponse = await API.getFaculties(establishmentId)
+    const faculties = Array.isArray(facultiesResponse) ? facultiesResponse : (facultiesResponse?.data || [])
+    availableFaculties.value = faculties
+    console.log('[ComparativeReportModal] Faculties fetched:', availableFaculties.value)
+  } catch (error) {
+    console.error('[ComparativeReportModal] Failed to load faculties:', error)
+    // If API doesn't have getFaculties, provide some default faculties
+    availableFaculties.value = [
+      'Mathematics',
+      'Science',
+      'English',
+      'Humanities',
+      'Arts',
+      'Technology',
+      'Languages',
+      'Physical Education'
+    ]
+  }
+  
   // Check if Cycle 3 data exists - for now assume it doesn't unless we have evidence
   // TODO: Check actual data to determine if Cycle 3 exists
   hasCycle3Data.value = false
@@ -592,6 +700,13 @@ const canProceed = computed(() => {
       case 'year_group_vs_year_group':
         return reportConfig.value.yearGroup1 && reportConfig.value.yearGroup2 && 
                reportConfig.value.yearGroup1 !== reportConfig.value.yearGroup2
+      case 'faculty_vs_faculty':
+        return reportConfig.value.faculty1 && reportConfig.value.faculty2 && 
+               reportConfig.value.faculty1 !== reportConfig.value.faculty2
+      case 'faculty_progression':
+        return reportConfig.value.faculty && 
+               reportConfig.value.academicYears.length >= 1 &&
+               reportConfig.value.cycles.length >= 1
       case 'academic_year_vs_academic_year':
         return reportConfig.value.academicYear1 && reportConfig.value.academicYear2 && 
                reportConfig.value.academicYear1 !== reportConfig.value.academicYear2
