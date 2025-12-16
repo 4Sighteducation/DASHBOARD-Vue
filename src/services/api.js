@@ -258,7 +258,9 @@ export const API = {
         console.warn('Using mock data for genders')
         return MOCK_DATA.genders
       }
-      throw error
+      // Non-fatal: some deployments may not have students.gender yet
+      console.warn('Failed to fetch genders, returning empty list:', error)
+      return []
     }
   },
 

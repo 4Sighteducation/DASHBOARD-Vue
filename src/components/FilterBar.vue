@@ -208,19 +208,25 @@ const performSearch = debounce(async (query) => {
 // Methods
 async function loadFilterOptions() {
   try {
-    const [yearGroupsData, groupsData, facultiesData, gendersData] = await Promise.all([
+    const [yearGroupsData, groupsData, facultiesData] = await Promise.all([
       API.getYearGroups(store.selectedEstablishment),
       API.getGroups(store.selectedEstablishment),
-      API.getFaculties(store.selectedEstablishment),
-      API.getGenders(store.selectedEstablishment)
+      API.getFaculties(store.selectedEstablishment)
     ])
 
     yearGroups.value = yearGroupsData
     groups.value = groupsData
     faculties.value = facultiesData
-    genders.value = gendersData
   } catch (error) {
     console.error('Failed to load filter options:', error)
+  }
+
+  // Gender is optional; if it fails, don't break the other filters
+  try {
+    genders.value = await API.getGenders(store.selectedEstablishment)
+  } catch (error) {
+    console.warn('Failed to load genders (non-fatal):', error)
+    genders.value = []
   }
 }
 
