@@ -27,6 +27,7 @@ export const useDashboardStore = defineStore('dashboard', {
       yearGroup: 'all',
       group: 'all',
       faculty: 'all',
+      gender: 'all',
       studentId: null,
       studentName: null,
       cycle: 1
@@ -283,6 +284,7 @@ export const useDashboardStore = defineStore('dashboard', {
         yearGroup: 'all',
         group: 'all',
         faculty: 'all',
+        gender: 'all',
         studentId: null,
         studentName: null,
         cycle: this.filters.cycle || 1  // Keep the current cycle

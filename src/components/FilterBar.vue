@@ -72,6 +72,21 @@
         </select>
       </div>
 
+      <div class="filter-group">
+        <label class="filter-label">Gender</label>
+        <select
+          class="form-select"
+          :value="filters.gender"
+          @change="updateFilter('gender', $event.target.value)"
+          :disabled="!genders.length"
+        >
+          <option value="all">All Genders</option>
+          <option v-for="gender in genders" :key="gender" :value="gender">
+            {{ gender }}
+          </option>
+        </select>
+      </div>
+
       <div class="filter-group search-group">
         <label class="filter-label">Search Student</label>
         <div class="search-wrapper">
@@ -143,6 +158,7 @@ const store = useDashboardStore()
 const yearGroups = ref([])
 const groups = ref([])
 const faculties = ref([])
+const genders = ref([])
 const searchQuery = ref('')
 const searchResults = ref([])
 const searchLoading = ref(false)
@@ -155,6 +171,7 @@ const hasActiveFilters = computed(() => {
   return props.filters.yearGroup !== 'all' || 
          props.filters.group !== 'all' ||
          props.filters.faculty !== 'all' ||
+         props.filters.gender !== 'all' ||
          props.filters.studentId !== null
 })
 
@@ -192,15 +209,17 @@ const performSearch = debounce(async (query) => {
 // Methods
 async function loadFilterOptions() {
   try {
-    const [yearGroupsData, groupsData, facultiesData] = await Promise.all([
+    const [yearGroupsData, groupsData, facultiesData, gendersData] = await Promise.all([
       API.getYearGroups(store.selectedEstablishment),
       API.getGroups(store.selectedEstablishment),
-      API.getFaculties(store.selectedEstablishment)
+      API.getFaculties(store.selectedEstablishment),
+      API.getGenders(store.selectedEstablishment)
     ])
 
     yearGroups.value = yearGroupsData
     groups.value = groupsData
     faculties.value = facultiesData
+    genders.value = gendersData
   } catch (error) {
     console.error('Failed to load filter options:', error)
   }
@@ -302,12 +321,13 @@ onMounted(() => {
 }
 
 .filter-group {
-  flex: 1;
-  min-width: 200px;
+  flex: 1 1 160px;
+  min-width: 160px;
 }
 
 .search-group {
-  min-width: 300px;
+  flex: 2 1 320px;
+  min-width: 260px;
 }
 
 .filter-label {
@@ -435,7 +455,7 @@ onMounted(() => {
 
 @media (max-width: 1024px) {
   .filter-group {
-    min-width: calc(50% - var(--spacing-sm));
+    min-width: calc(33.333% - var(--spacing-sm));
   }
   
   .search-group {

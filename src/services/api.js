@@ -59,6 +59,7 @@ const MOCK_DATA = {
   academicYears: ['2023-24', '2022-23', '2021-22'],
   keyStages: ['KS3', 'KS4', 'KS5'],
   yearGroups: ['7', '8', '9', '10', '11', '12', '13'],
+  genders: ['Female', 'Male'],
   statistics: {
     totalStudents: 450,
     averageERI: 72.5,
@@ -246,6 +247,21 @@ export const API = {
     }
   },
 
+  async getGenders(establishmentId) {
+    try {
+      const response = await apiClient.get(`${this.getBaseUrl()}/api/genders`, {
+        params: { establishment_id: establishmentId }
+      })
+      return response.data
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Using mock data for genders')
+        return MOCK_DATA.genders
+      }
+      throw error
+    }
+  },
+
   async searchStudents(establishmentId, searchTerm) {
     try {
       const response = await apiClient.get(`${this.getBaseUrl()}/api/students/search`, {
@@ -282,6 +298,7 @@ export const API = {
       if (filters.yearGroup) params.yearGroup = filters.yearGroup
       if (filters.group) params.group = filters.group
       if (filters.faculty) params.faculty = filters.faculty
+      if (filters.gender) params.gender = filters.gender
       if (filters.studentId) params.studentId = filters.studentId
       
       const response = await apiClient.get(`${this.getBaseUrl()}/api/statistics`, {
@@ -317,6 +334,7 @@ export const API = {
       if (filters.yearGroup) params.yearGroup = filters.yearGroup
       if (filters.group) params.group = filters.group
       if (filters.faculty) params.faculty = filters.faculty
+      if (filters.gender) params.gender = filters.gender
       if (filters.studentId) params.studentId = filters.studentId
       
       const response = await apiClient.get(url, {
@@ -364,6 +382,7 @@ export const API = {
       if (filters.yearGroup) params.year_group = filters.yearGroup
       if (filters.group) params.group = filters.group
       if (filters.faculty) params.faculty = filters.faculty
+      if (filters.gender) params.gender = filters.gender
       if (filters.studentId) params.student_id = filters.studentId
       
       const response = await apiClient.get(`${this.getBaseUrl()}/api/comments/word-cloud`, {
@@ -406,6 +425,7 @@ export const API = {
       if (filters.yearGroup) params.year_group = filters.yearGroup
       if (filters.group) params.group = filters.group
       if (filters.faculty) params.faculty = filters.faculty
+      if (filters.gender) params.gender = filters.gender
       if (filters.studentId) params.student_id = filters.studentId
       
       const response = await apiClient.get(`${this.getBaseUrl()}/api/comments/themes`, {
