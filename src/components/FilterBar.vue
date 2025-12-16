@@ -78,7 +78,6 @@
           class="form-select"
           :value="filters.gender"
           @change="updateFilter('gender', $event.target.value)"
-          :disabled="!genders.length"
         >
           <option value="all">All Genders</option>
           <option v-for="gender in genders" :key="gender" :value="gender">
